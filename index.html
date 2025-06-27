@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Flagr</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              spotify: '#1DB954',
+            },
+            keyframes: {
+              'bounce-scale': {
+                '0%, 100%': { transform: 'scale(1)', opacity: '1' },
+                '50%': { transform: 'scale(0.8)', opacity: '0.7' },
+              },
+              'toast-in': {
+                'from': { opacity: '0', transform: 'translate(-50%, 20px)' },
+                'to': { opacity: '1', transform: 'translate(-50%, 0)' },
+              },
+              'move-gradient': {
+                '0%': { 'background-position': '0% 50%' },
+                '50%': { 'background-position': '100% 50%' },
+                '100%': { 'background-position': '0% 50%' },
+              },
+              'fill-bar': {
+                from: { width: '0%' },
+              },
+              'stagger-in': {
+                 'from': { opacity: 0, transform: 'translateY(10px)' },
+                 'to': { opacity: 1, transform: 'translateY(0)' },
+              },
+              'glow': {
+                '0%, 100%': { 'box-shadow': '0 0 5px rgba(29, 185, 84, 0.2), 0 0 10px rgba(29, 185, 84, 0.2)' },
+                '50%': { 'box-shadow': '0 0 15px rgba(29, 185, 84, 0.4), 0 0 25px rgba(29, 185, 84, 0.3)' },
+              },
+            },
+            animation: {
+             'bounce-scale': 'bounce-scale 1.4s infinite ease-in-out',
+             'toast-in': 'toast-in 0.3s ease-out forwards',
+             'move-gradient': 'move-gradient 15s ease infinite',
+             'fill-bar': 'fill-bar 1s ease-out forwards',
+             'stagger-in': 'stagger-in 0.5s ease-out forwards',
+             'glow': 'glow 3s infinite ease-in-out',
+            }
+          },
+        },
+      };
+    </script>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+      body {
+        font-family: 'Inter', sans-serif;
+        overflow: hidden;
+      }
+      html.dark body {
+        background: #121212;
+      }
+      ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #121212;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #535353;
+        border-radius: 4px;
+      }
+      html.dark ::-webkit-scrollbar-thumb {
+        background: #535353;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+         background: #b3b3b3;
+      }
+      html.dark ::-webkit-scrollbar-thumb:hover {
+        background: #1DB954;
+      }
+
+      @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+      }
+      
+      .animate-fadeIn {
+        animation: fadeIn 0.3s ease-in-out forwards;
+      }
+
+      @keyframes fadeInSlideUp {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .animate-fadeInSlideUp {
+        animation: fadeInSlideUp 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+      }
+      
+      /* Card Spotlight Effect */
+      .spotlight-card::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        border-radius: inherit; /* Use parent's border-radius */
+        opacity: 0;
+        transition: opacity 0.4s ease-in-out;
+        background: radial-gradient(450px circle at var(--mouse-x) var(--mouse-y), rgba(29, 185, 84, 0.15), transparent 80%);
+      }
+
+      .spotlight-card:hover::before {
+        opacity: 1;
+      }
+
+      /* Refined Shimmer for Skeletons */
+      @keyframes shimmer {
+        100% { transform: translateX(100%); }
+      }
+      
+      .shimmer-bg {
+        position: relative;
+        overflow: hidden;
+      }
+
+      .shimmer-bg::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        transform: translateX(-100%);
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.04), transparent);
+        animation: shimmer 1.5s infinite;
+      }
+      
+      .glass-pane::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMzAwIj48ZmlsdGVyIGlkPSJub2lzZSI+PGZlVHVyYnVsZW5jZSB0eXBlPSJmcmFjdGFsTm9pc2UiIGJhc2VGcmVxdWVuY3k9IjAuODUiIG51bU9jdGF2ZXM9IjEwIiBzdGl0Y2hUaWxlcz0ic3RpdGNoIi8+PGZlQ29tcG9zaXRlIG9wZXJhdG9yPSJpbiIgaW4yPSJTb3VyY2VBbHBoYSIgcmVzdWx0PSJub2lzZSIvPjwvZmlsdGVyPjxyZWN0IHdpZHRoPSIzMDAiIGhlaWdodD0iMzAwIiBmaWx0ZXI9InVybCgjbm9pc2UpIiBvcGFjaXR5PSIwLjUiLz48L3N2Zz4=');
+        opacity: 0.025;
+        pointer-events: none;
+      }
+
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@^19.1.0",
+    "react-dom/": "https://esm.sh/react-dom@^19.1.0/",
+    "react/": "https://esm.sh/react@^19.1.0/",
+    "uuid": "https://esm.sh/uuid@^11.1.0",
+    "react-markdown": "https://esm.sh/react-markdown@^9.0.1",
+    "remark-gfm": "https://esm.sh/remark-gfm@^4.0.0",
+    "react-syntax-highlighter": "https://esm.sh/react-syntax-highlighter@^15.5.0",
+    "react-syntax-highlighter/dist/esm/styles/prism": "https://esm.sh/react-syntax-highlighter@15.5.0/dist/esm/styles/prism",
+    "react-syntax-highlighter/": "https://esm.sh/react-syntax-highlighter@^15.6.1/",
+    "react-motion": "https://esm.sh/react-motion@^0.5.2",
+    "pdfjs-dist": "https://esm.sh/pdfjs-dist@4.5.136",
+    "mammoth": "https://esm.sh/mammoth@1.8.0",
+    "@google/genai": "https://esm.sh/@google/genai@^1.7.0",
+    "ollama": "https://esm.sh/ollama@^0.5.16"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+  <body>
+    <div class="fixed top-0 left-0 w-full h-full -z-10 animate-move-gradient" style="background: linear-gradient(-45deg, hsl(0, 0%, 12%), hsl(0, 0%, 8%), hsl(0, 0%, 5%), hsl(0, 0%, 10%)); background-size: 400% 400%;"></div>
+    <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
+  </body>
+</html>

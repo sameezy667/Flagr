@@ -1,0 +1,138 @@
+import { GoogleGenAI, GenerateContentResponse } from "@google/genai";
+import { Message, MessageRole, AIAnalysisData } from '../types';
+
+const GEMINI_MODEL = 'gemini-2.5-flash-preview-04-17';
+
+const DOCUMENT_ANALYSIS_INSTRUCTION = (docType: string) => `You are an expert AI legal assistant. Your task is to analyze a ${docType} and return a structured JSON object. DO NOT add any commentary before or after the JSON object. The JSON output must conform to this exact TypeScript interface:
+interface AIAnalysisData {
+  plainLanguageSummary: string;
+  flags: {
+    id: string; // e.g., "flag-1"
+    title: string; // Brief description of the concern
+    clause: string; // The exact problematic text from the document
+    explanation: string; // Why this is a potential issue or threat
+    severity: 'Low' | 'Medium' | 'High';
+  }[];
+  riskAssessment: {
+    overallSummary: string;
+    risks: {
+      area: string; // e.g., "Privacy", "Financial"
+      assessment: string; // Explanation of the risk
+      score: number; // 1 (low) to 10 (high)
+    }[];
+  };
+  aiInsights: {
+    overallSummary: string;
+    recommendations: {
+      id: string; // e.g., "insight-1"
+      recommendation: string; // Actionable advice
+      justification: string; // Reason for the recommendation
+    }[];
+  };
+}
+
+GUIDELINES:
+
+1.  **plainLanguageSummary**:
+    *   Provide a concise, neutral summary of the document's main purpose in simple, everyday language.
+
+2.  **flags**:
+    *   Analyze the document for concerning provisions. Look for these threat types:
+        *   **POWER EXPANSION**: Government/company getting unusual new powers.
+        *   **VAGUE LANGUAGE**: Ambiguous terms like "reasonable," "necessary," "appropriate."
+        *   **RIGHTS RESTRICTIONS**: Limiting freedoms of speech, privacy, etc.
+        *   **SURVEILLANCE**: Data collection, monitoring, tracking.
+        *   **EMERGENCY POWERS**: Special authorities during crises.
+        *   **FINANCIAL IMPACT**: Hidden fees, penalties, financial obligations.
+    *   For each threat found, create a flag object.
+    *   'title' should be a brief description of the concern (e.g., "Vague Language in Termination Clause").
+    *   'severity' must be 'Low', 'Medium', or 'High'.
+    *   'explanation' should detail the potential harm.
+    *   'clause' must be the exact quote from the document.
+    *   If no significant flags are found, return an empty array [].
+
+3.  **riskAssessment**:
+    *   Provide an 'overallSummary' of compliance and transparency.
+    *   List specific 'risks' with a 'score' from 1 (low) to 10 (high).
+
+4.  **aiInsights**:
+    *   Provide an 'overallSummary' of your analysis.
+    *   List actionable 'recommendations' to improve the document.
+
+Generate at least 2-3 flags, 2-3 risks, and 2-3 insights if the document is sufficiently complex. Ensure the output is only the raw JSON object.`;
+
+const FOLLOW_UP_SYSTEM_INSTRUCTION = `You are Flagr, an expert AI assistant specializing in document analysis. The user has already seen the initial analysis of their document. Your role now is to answer follow-up questions accurately and conversationally, based ONLY on the document context provided in the chat history. If the answer is not in the document, state that clearly. Use formatting like bolding and bullet points to improve readability.`;
+
+
+export async function generateDocumentAnalysis(documentContent: string, docType: string): Promise<AIAnalysisData> {
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    const systemPrompt = DOCUMENT_ANALYSIS_INSTRUCTION(docType);
+    const userPrompt = `Document for analysis:\n\n${documentContent}`;
+    
+    try {
+        const response: GenerateContentResponse = await ai.models.generateContent({
+            model: GEMINI_MODEL,
+            contents: userPrompt,
+            config: {
+                systemInstruction: systemPrompt,
+                responseMimeType: "application/json",
+            },
+        });
+        
+        if (!response.text) {
+            throw new Error("AI response did not contain any text.");
+        }
+        let jsonStr = response.text.trim();
+        const fenceRegex = /^```(\w*)?\s*\n?(.*?)\n?\s*```$/s;
+        const match = jsonStr.match(fenceRegex);
+        if (match && match[2]) {
+            jsonStr = match[2].trim();
+        }
+        
+        const parsedData = JSON.parse(jsonStr);
+        return parsedData as AIAnalysisData;
+
+    } catch (error) {
+        console.error("Error generating document analysis from Gemini:", error);
+        throw new Error("Failed to get a valid analysis from the AI. Please check your API key and network connection.");
+    }
+}
+
+
+export async function* streamChatResponse(
+    history: Message[],
+): AsyncGenerator<string> {
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    
+    // Gemini expects role 'user' or 'model'.
+    const geminiHistory = history.map(msg => ({
+        role: msg.role === MessageRole.USER ? 'user' : 'model',
+        parts: [{ text: msg.content }]
+    }));
+
+    try {
+        const responseStream = await ai.models.generateContentStream({
+            model: GEMINI_MODEL,
+            contents: geminiHistory,
+            config: {
+                systemInstruction: FOLLOW_UP_SYSTEM_INSTRUCTION
+            }
+        });
+
+        for await (const chunk of responseStream) {
+            if (chunk.text) {
+                yield chunk.text;
+            }
+        }
+    } catch (error) {
+        console.error("Error streaming from Gemini:", error);
+        yield `Error: Could not get a response from the AI. Please check your API key and network connection.`;
+    }
+}
+
+export function generateTitleFromMessage(message: string): string {
+    const cleanMessage = message.replace(/(\*|_|`)/g, '').trim();
+    const words = cleanMessage.split(/\s+/);
+    const title = words.slice(0, 5).join(' ');
+    return words.length > 5 ? `${title}...` : title;
+}

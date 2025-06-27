@@ -1,0 +1,6 @@
+{
+  "name": "Flagr",
+  "description": "Analyze documents, detect hidden flags, and translate complex language into clear, understandable insights with Flagr's advanced AI, now powered by local Llama models.",
+  "requestFramePermissions": [],
+  "prompt": ""
+}
