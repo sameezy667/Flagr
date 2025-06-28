@@ -19,8 +19,8 @@ const ChatPanel: React.FC<ChatPanelProps> = ({ session, isProcessing, onSendMess
     const showViewAnalysisButton = isMobile && session.analysis && onViewAnalysis;
 
     return (
-        <div className="flex-1 flex flex-col overflow-hidden h-full">
-            <header className="p-4 border-b border-neutral-800/50 flex justify-between items-center flex-shrink-0 bg-black/30 backdrop-blur-xl relative glass-pane">
+        <div className="flex-1 flex flex-col h-full max-h-screen overflow-hidden">
+            <header className="p-4 border-b border-neutral-800/50 flex justify-between items-center flex-shrink-0 bg-black/30 backdrop-blur-xl relative glass-pane z-10">
                 <div className="flex items-center gap-3">
                     <button onClick={onToggleSidebar} className="p-1.5 text-gray-400 hover:text-white rounded-md hover:bg-neutral-700 md:hidden">
                         <MenuIcon className="w-5 h-5" />
@@ -43,7 +43,7 @@ const ChatPanel: React.FC<ChatPanelProps> = ({ session, isProcessing, onSendMess
                  )}
             </header>
 
-            <div className="flex-1 overflow-y-auto p-4 md:p-6 animate-fadeIn">
+            <div className="flex-1 overflow-y-auto min-h-0 scrollbar-custom p-4 md:p-6 animate-fadeIn" style={{ scrollbarGutter: 'stable' }}>
                 <ChatView
                     key={session.id}
                     session={session}
@@ -51,7 +51,7 @@ const ChatPanel: React.FC<ChatPanelProps> = ({ session, isProcessing, onSendMess
                 />
             </div>
 
-            <div className="p-4 border-t border-neutral-800/50 flex-shrink-0 bg-black/30 backdrop-blur-xl relative glass-pane">
+            <div className="p-4 border-t border-neutral-800/50 flex-shrink-0 bg-black/30 backdrop-blur-xl relative glass-pane z-10">
                 <ChatInput
                     onSubmit={onSendMessage}
                     isLoading={isProcessing}
@@ -64,4 +64,4 @@ const ChatPanel: React.FC<ChatPanelProps> = ({ session, isProcessing, onSendMess
 }
 
 
-export default ChatPanel;
+export default ChatPanel;

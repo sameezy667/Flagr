@@ -81,6 +81,25 @@
         background: #1DB954;
       }
 
+      /* Custom scrollbar for chat panel */
+      .scrollbar-custom::-webkit-scrollbar {
+        width: 6px;
+      }
+      .scrollbar-custom::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      .scrollbar-custom::-webkit-scrollbar-thumb {
+        background: #535353;
+        border-radius: 10px;
+      }
+      .scrollbar-custom::-webkit-scrollbar-thumb:hover {
+        background: #1DB954;
+      }
+      .scrollbar-custom {
+        scrollbar-width: thin;
+        scrollbar-color: #535353 transparent;
+      }
+      
       @keyframes fadeIn {
         from { opacity: 0; }
         to { opacity: 1; }
@@ -179,5 +198,5 @@
     <div class="fixed top-0 left-0 w-full h-full -z-10 animate-move-gradient" style="background: linear-gradient(-45deg, hsl(0, 0%, 12%), hsl(0, 0%, 8%), hsl(0, 0%, 5%), hsl(0, 0%, 10%)); background-size: 400% 400%;"></div>
     <div id="root"></div>
     <script type="module" src="/index.tsx"></script>
-  </body>
+  </body>
 </html>
