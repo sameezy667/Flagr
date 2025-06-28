@@ -55,7 +55,7 @@
       @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
       body {
         font-family: 'Inter', sans-serif;
-        overflow: hidden;
+        overflow: hidden; /* This was identified as a potential issue for cut-off content */
       }
       html.dark body {
         background: #121212;
@@ -75,7 +75,7 @@
         background: #535353;
       }
       ::-webkit-scrollbar-thumb:hover {
-         background: #b3b3b3;
+          background: #b3b3b3;
       }
       html.dark ::-webkit-scrollbar-thumb:hover {
         background: #1DB954;
@@ -99,12 +99,12 @@
         scrollbar-width: thin;
         scrollbar-color: #535353 transparent;
       }
-      
+
       @keyframes fadeIn {
         from { opacity: 0; }
         to { opacity: 1; }
       }
-      
+
       .animate-fadeIn {
         animation: fadeIn 0.3s ease-in-out forwards;
       }
@@ -123,7 +123,7 @@
       .animate-fadeInSlideUp {
         animation: fadeInSlideUp 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
       }
-      
+
       /* Card Spotlight Effect */
       .spotlight-card::before {
         content: "";
@@ -143,7 +143,7 @@
       @keyframes shimmer {
         100% { transform: translateX(100%); }
       }
-      
+
       .shimmer-bg {
         position: relative;
         overflow: hidden;
@@ -160,7 +160,7 @@
         background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.04), transparent);
         animation: shimmer 1.5s infinite;
       }
-      
+
       .glass-pane::after {
         content: '';
         position: absolute;
@@ -198,5 +198,5 @@
     <div class="fixed top-0 left-0 w-full h-full -z-10 animate-move-gradient" style="background: linear-gradient(-45deg, hsl(0, 0%, 12%), hsl(0, 0%, 8%), hsl(0, 0%, 5%), hsl(0, 0%, 10%)); background-size: 400% 400%;"></div>
     <div id="root"></div>
     <script type="module" src="/index.tsx"></script>
-  </body>
+  </body>
 </html>
