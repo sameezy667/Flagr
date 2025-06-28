@@ -1,5 +1,5 @@
 <p align="center">
-    <img src="https://raw.githubusercontent.com/PKief/vscode-material-icon-theme/ec559a9f6bfd399b82bb44393651661b08aaf7ba/icons/folder-markdown-open.svg" align="center" width="30%">
+    <img src="https://github.com/user-attachments/assets/204e2ed8-0880-4b6e-9eac-b4c7b67ce1c8" align="center" width="30%">
 </p>
 <p align="center"><h1 align="center">FLAGR</h1></p>
 <p align="center">
@@ -69,34 +69,34 @@ The platform leverages advanced language models to provide comprehensive documen
 └── Flagr/
     ├── App.tsx                          # Main application component
     ├── README.md                        # Project documentation
-    ├── components/                      # React components
-    │   ├── AnalysisLoadingView.tsx     # Loading state display during analysis
-    │   ├── AnalysisModal.tsx           # Document analysis configuration modal
-    │   ├── AnalysisResultsView.tsx     # Analysis results display and visualization
-    │   ├── ChatInput.tsx               # Message input component with file upload
-    │   ├── ChatMessage.tsx             # Individual chat message display component
-    │   ├── ChatPanel.tsx               # Chat interface container and management
-    │   ├── ChatView.tsx                # Main chat conversation display component
-    │   ├── InitialView.tsx             # Landing page and welcome screen component
-    │   ├── LoginPage.tsx               # User authentication and login interface
-    │   ├── Sidebar.tsx                 # Navigation sidebar and menu component
-    │   └── UserProfile.tsx             # User profile management and settings
-    ├── constants.tsx                   # Application-wide constants and configuration values
-    ├── index.html                      # HTML entry point
-    ├── index.tsx                       # React application entry point and root rendering
-    ├── metadata.json                   # Project metadata and configuration
-    ├── package-lock.json              # NPM dependency lock file
-    ├── package.json                    # NPM package configuration and dependencies
-    ├── services/                       # Service layer for external integrations
+    ├── components/                     
+    │   ├── AnalysisLoadingView.tsx     
+    │   ├── AnalysisModal.tsx           
+    │   ├── AnalysisResultsView.tsx     
+    │   ├── ChatInput.tsx               
+    │   ├── ChatMessage.tsx            
+    │   ├── ChatPanel.tsx               
+    │   ├── ChatView.tsx               
+    │   ├── InitialView.tsx             
+    │   ├── LoginPage.tsx               
+    │   ├── Sidebar.tsx                
+    │   └── UserProfile.tsx          
+    ├── constants.tsx                   
+    ├── index.html                     
+    ├── index.tsx                      
+    ├── metadata.json                   
+    ├── package-lock.json              
+    ├── package.json                   
+    ├── services/                      
     │   ├── documentParser.ts           # Document parsing and content extraction utilities
     │   ├── firebaseService.ts          # Firebase integration for backend services
     │   ├── geminiService.ts.bak        # Gemini AI service (backup)
     │   ├── llama-api.services.ts       # Llama API integration for AI-powered analysis
     │   └── storageService.ts           # Local storage management and data persistence
-    ├── tsconfig.json                   # TypeScript configuration
-    ├── types.ts                        # TypeScript type definitions for the entire application
-    ├── vite-env.d.ts                   # Vite environment type definitions
-    └── vite.config.ts                  # Vite build tool configuration
+    ├── tsconfig.json                  
+    ├── types.ts                       
+    ├── vite-env.d.ts                  
+    └── vite.config.ts                  
 ```
 
 ### 📂 Project Index
@@ -285,21 +285,7 @@ yarn preview
 
 The application will be available at `http://localhost:5173` (or the port specified in your configuration).
 
-### 🧪 Testing
 
-Run the test suite using the following command:
-
-**Using npm:**
-```bash
-npm test
-```
-
-**Using yarn:**
-```bash
-yarn test
-```
-
----
 
 ## 🛣️ Project Roadmap
 
