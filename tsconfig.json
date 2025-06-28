@@ -21,20 +21,13 @@
     "noFallthroughCasesInSwitch": true,
 
     "paths": {
-      "@/*": ["./src/*"]
-    },
-
-    /* Additional Options */
-    "esModuleInterop": true,  // Enables emit interoperability between CommonJS and ES Modules
-    "forceConsistentCasingInFileNames": true // Ensures consistent file naming
+      "@/*": ["./src/*"] 
+      // This path alias assumes a 'src' folder which you don't have.
+      // It's not hurting anything right now, but we'll leave it for now.
+    }
   },
-  "include": [
-    "src",
-    "vite.config.ts",
-    "types/**/*",  // Include your custom types directory if you created one
-    "vite-env.d.ts" // Include the Vite environment type declaration file
-  ],
-  "exclude": [
-    "node_modules"  // Exclude node_modules to avoid unnecessary checks
-  ]
+  // THE FIX: This "include" property tells TypeScript to look at ALL .ts, .tsx,
+  // and .d.ts files in your project, which will find your new vite-env.d.ts file.
+  "include": ["**/*.ts", "**/*.tsx", "**/*.d.ts"],
+  "exclude": ["node_modules"]
 }

@@ -3,7 +3,7 @@
 import { Message, MessageRole, AIAnalysisData } from '../types';
 
 // --- CONFIGURATION ---
-const API_BASE_URL = 'https://api.groq.com/openai/v1'; // Ensure this URL is correct
+const API_BASE_URL = 'https://api.groq.com/openai/v1';
 const API_KEY = import.meta.env.VITE_GROQ_API_KEY; 
 const MODEL_NAME = 'llama3-8b-8192';
 
@@ -76,7 +76,7 @@ export async function generateDocumentAnalysis(
       throw new Error("API response did not contain a valid message.");
     }
     
-    // Parse the JSON response directly since the API guarantees a valid JSON object.
+    // The 'extractJsonFromString' helper is no longer needed because JSON mode guarantees a valid string.
     const parsedData = JSON.parse(messageContent);
     return parsedData as AIAnalysisData;
 
@@ -91,6 +91,8 @@ export async function generateDocumentAnalysis(
   }
 }
 
+// The rest of the file remains the same.
+
 /**
  * Streams the chat response for follow-up questions from the Llama 3 API.
  */
@@ -101,16 +103,15 @@ export async function* streamChatResponse(
       yield "Error: Missing API Key in the application configuration.";
       return;
   }
-  
-  const systemInstruction = `You are Flagr, an expert AI assistant specializing in document analysis. The user has already seen the initial analysis of their document. Your role now is to answer follow-up questions accurately and conversationally, based ONLY on the document context provided in the chat history. If the answer is not in the document, state that clearly. Use formatting like bolding and bullet points to improve readability.`;
+    const systemInstruction = `You are Flagr, an expert AI assistant specializing in document analysis. The user has already seen the initial analysis of their document. Your role now is to answer follow-up questions accurately and conversationally, based ONLY on the document context provided in the chat history. If the answernot in the document, state that clearly. Use formatting like bolding and bullet points to improve readability.`;
 
-  const messages = [
-      { role: 'system', content: systemInstruction },
-      ...history.map(msg => ({
-          role: msg.role === MessageRole.USER ? 'user' : 'assistant',
-          content: msg.content
-      }))
-  ];
+    const messages = [
+        { role: 'system', content: systemInstruction },
+        ...history.map(msg => ({
+            role: msg.role === MessageRole.USER ? 'user' : 'assistant',
+            content: msg.content
+        }))
+    ];
 
   try {
     const response = await fetch(`${API_BASE_URL}/chat/completions`, {

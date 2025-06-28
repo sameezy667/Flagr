@@ -1,5 +1,3 @@
-
-
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import Sidebar from './components/Sidebar';
 import ChatPanel from './components/ChatPanel';
@@ -12,8 +10,9 @@ import { Message, MessageRole, ChatSession, User, AnalysisResult } from './types
 import { v4 as uuidv4 } from 'uuid';
 import { generateTitleFromMessage, streamChatResponse, generateDocumentAnalysis } from './services/llama-api.services';
 import { storageService } from './services/storageService';
+import { firebaseService } from './services/firebaseService';
 import { extractTextFromFile, cleanText, detectDocumentType, getTextStats } from './services/documentParser';
-import { CheckIcon } from './constants';
+import { CheckIcon, FlagrLogo } from './constants';
 
 const useMediaQuery = (query: string) => {
     const [matches, setMatches] = useState(false);
@@ -69,7 +68,6 @@ const Toast: React.FC<{ message: string; onDismiss: () => void; }> = ({ message,
     );
 };
 
-
 const App: React.FC = () => {
     const [currentUser, setCurrentUser] = useState<User | null>(null);
     const [isLoadingAuth, setIsLoadingAuth] = useState(true);
@@ -86,17 +84,10 @@ const App: React.FC = () => {
 
     // Auth effect - runs once
     useEffect(() => {
-        try {
-            const savedUser = storageService.getItem('flagrUser');
-            if (savedUser) {
-                setCurrentUser(JSON.parse(savedUser));
-            }
-        } catch (error) {
-            console.error("Failed to load user from storage", error);
-            storageService.removeItem('flagrUser'); // Clear corrupted data
-        } finally {
+        const unsubscribe = firebaseService.onAuthStateChanged((user) => {
+            setCurrentUser(user);
             setIsLoadingAuth(false);
-        }
+        });
 
         const savedSidebarState = storageService.getItem('flagrSidebarState');
         if (savedSidebarState !== null) {
@@ -108,6 +99,8 @@ const App: React.FC = () => {
         } else {
             setIsSidebarExpanded(!isMobile);
         }
+        
+        return () => unsubscribe();
     }, [isMobile]);
     
     // Session loading effect - depends on user
@@ -157,12 +150,16 @@ const App: React.FC = () => {
     
     const handleLogin = (user: User) => {
         setCurrentUser(user);
-        storageService.setItem('flagrUser', JSON.stringify(user));
     };
 
-    const handleLogout = () => {
-        storageService.removeItem('flagrUser');
-        setCurrentUser(null);
+    const handleLogout = async () => {
+        try {
+            await firebaseService.signOut();
+            setToastMessage("Successfully signed out.");
+        } catch (error) {
+            console.error("Logout error:", error);
+            setToastMessage("Error signing out. Please try again.");
+        }
     };
 
     const runDocumentAnalysis = useCallback(async (file: File, fileContent: string) => {
@@ -445,7 +442,21 @@ const App: React.FC = () => {
     };
 
     if (isLoadingAuth) {
-        return <div className="fixed top-0 left-0 w-full h-full bg-transparent"></div>;
+        return (
+            <div className="fixed top-0 left-0 w-full h-full bg-transparent flex items-center justify-center">
+                <div className="text-center">
+                    <div className="inline-block mb-6">
+                        <FlagrLogo showText={true} />
+                    </div>
+                    <div className="mt-4">
+                        <svg className="animate-spin h-8 w-8 text-spotify mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        );
     }
 
     if (!currentUser) {

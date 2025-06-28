@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@google/genai": "^1.7.0",
+    "firebase": "^11.9.1",
     "framer-motion": "^11.3.12",
     "mammoth": "^1.8.0",
     "ollama": "^0.5.16",
