@@ -18,13 +18,12 @@ const useMediaQuery = (query: string) => {
     const [matches, setMatches] = useState(false);
     useEffect(() => {
         const media = window.matchMedia(query);
-        if (media.matches !== matches) {
-            setMatches(media.matches);
-        }
-        const listener = () => setMatches(media.matches);
-        window.addEventListener('resize', listener);
-        return () => window.removeEventListener('resize', listener);
-    }, [matches, query]);
+        setMatches(media.matches);
+        
+        const listener = (event: MediaQueryListEvent) => setMatches(event.matches);
+        media.addEventListener('change', listener);
+        return () => media.removeEventListener('change', listener);
+    }, [query]);
     return matches;
 };
 
@@ -81,7 +80,20 @@ const App: React.FC = () => {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const dragCounter = useRef(0);
     const isMobile = useMediaQuery('(max-width: 768px)');
-    const isTablet = useMediaQuery('(min-width: 769px) and (max-width: 1024px)');
+
+    // Immediate mobile detection on mount
+    useEffect(() => {
+        const checkMobile = () => {
+            const isMobileView = window.innerWidth <= 768;
+            if (isMobileView && isSidebarExpanded) {
+                setIsSidebarExpanded(false);
+            }
+        };
+        
+        checkMobile();
+        window.addEventListener('resize', checkMobile);
+        return () => window.removeEventListener('resize', checkMobile);
+    }, [isSidebarExpanded]);
 
     // Auth effect - runs once
     useEffect(() => {
@@ -93,18 +105,21 @@ const App: React.FC = () => {
         const savedSidebarState = storageService.getItem('flagrSidebarState');
         if (savedSidebarState !== null) {
             try {
-                setIsSidebarExpanded(JSON.parse(savedSidebarState));
+                const savedState = JSON.parse(savedSidebarState);
+                // Only restore saved state if not on mobile
+                if (!isMobile) {
+                    setIsSidebarExpanded(savedState);
+                } else {
+                    setIsSidebarExpanded(false);
+                }
             } catch (error) {
                 console.error("Failed to parse sidebar state from storage", error);
+                setIsSidebarExpanded(!isMobile);
             }
         } else {
             setIsSidebarExpanded(!isMobile);
         }
         
-        // Always collapse sidebar on mobile by default
-        if (isMobile) {
-            setIsSidebarExpanded(false);
-        }
         return () => unsubscribe();
     }, [isMobile]);
     

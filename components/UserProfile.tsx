@@ -35,7 +35,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ user, onLogout, isSidebarExpa
                         <img src={user.avatarUrl} alt={user.username} className="w-7 h-7 sm:w-8 sm:h-8 rounded-full flex-shrink-0 object-cover bg-neutral-700" />
                     ) : (
                         <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-neutral-700 flex-shrink-0 flex items-center justify-center">
-                            <DefaultUserIcon className="w-4 h-4 sm:w-5 sm:h-5" />
+                            <DefaultUserIcon />
                         </div>
                     )}
                     {isSidebarExpanded && (

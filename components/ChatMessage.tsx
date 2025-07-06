@@ -87,7 +87,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message, isLoading = false })
     return (
         <div className={`group flex items-start ${isAssistant ? '' : 'flex-row-reverse'} animate-fadeInSlideUp ${typeof window !== 'undefined' && window.innerWidth <= 768 ? 'mb-3' : 'mb-2 sm:mb-4'} gap-2.5 sm:gap-3.5`}>
             <div className="flex-shrink-0">
-                {isAssistant ? <FlagrIcon className="w-6 h-6 sm:w-7 sm:h-7" /> : <UserIcon className="w-6 h-6 sm:w-7 sm:h-7" />}
+                {isAssistant ? <FlagrIcon /> : <UserIcon />}
             </div>
             <div className={`flex flex-col flex-1 w-0 ${isAssistant ? 'items-start' : 'items-end'}`}>
                  <div className="flex items-end gap-2">

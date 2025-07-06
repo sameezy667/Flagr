@@ -78,7 +78,7 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSubmit, isLoading, onUploadClic
                 className={`flex-shrink-0 flex items-center justify-center w-10 h-10 sm:w-11 sm:h-11 rounded-full transition-all duration-200 transform active:scale-95 ${canSubmit ? 'bg-spotify text-white hover:shadow-lg hover:shadow-spotify/30' : 'bg-neutral-900 text-gray-600 cursor-not-allowed'}`}
                 aria-label="Send message"
             >
-                <SendIcon className="w-4 h-4 sm:w-5 sm:h-5" />
+                <SendIcon />
             </button>
         </form>
     );
