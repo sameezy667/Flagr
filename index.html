@@ -3,7 +3,10 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <title>Flagr</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -53,13 +56,31 @@
     </script>
     <style>
       @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+      
+      /* Mobile-specific optimizations */
+      * {
+        -webkit-tap-highlight-color: transparent;
+        touch-action: manipulation;
+      }
+      
       body {
         font-family: 'Inter', sans-serif;
-        overflow: hidden; /* This was identified as a potential issue for cut-off content */
+        overflow: hidden;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        overscroll-behavior: none;
       }
+      
       html.dark body {
         background: #121212;
       }
+      
+      /* Prevent zoom on input focus on iOS */
+      input, textarea, select {
+        font-size: 16px !important;
+      }
+      
+      /* Improved scrollbar styling */
       ::-webkit-scrollbar {
         width: 8px;
         height: 8px;
@@ -129,7 +150,7 @@
         content: "";
         position: absolute;
         inset: 0;
-        border-radius: inherit; /* Use parent's border-radius */
+        border-radius: inherit;
         opacity: 0;
         transition: opacity 0.4s ease-in-out;
         background: radial-gradient(450px circle at var(--mouse-x) var(--mouse-y), rgba(29, 185, 84, 0.15), transparent 80%);
@@ -169,6 +190,13 @@
         background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMzAwIj48ZmlsdGVyIGlkPSJub2lzZSI+PGZlVHVyYnVsZW5jZSB0eXBlPSJmcmFjdGFsTm9pc2UiIGJhc2VGcmVxdWVuY3k9IjAuODUiIG51bU9jdGF2ZXM9IjEwIiBzdGl0Y2hUaWxlcz0ic3RpdGNoIi8+PGZlQ29tcG9zaXRlIG9wZXJhdG9yPSJpbiIgaW4yPSJTb3VyY2VBbHBoYSIgcmVzdWx0PSJub2lzZSIvPjwvZmlsdGVyPjxyZWN0IHdpZHRoPSIzMDAiIGhlaWdodD0iMzAwIiBmaWx0ZXI9InVybCgjbm9pc2UpIiBvcGFjaXR5PSIwLjUiLz48L3N2Zz4=');
         opacity: 0.025;
         pointer-events: none;
+      }
+
+      /* Mobile-specific improvements */
+      @media (max-width: 768px) {
+        .spotlight-card::before {
+          background: radial-gradient(300px circle at var(--mouse-x) var(--mouse-y), rgba(29, 185, 84, 0.15), transparent 60%);
+        }
       }
 
     </style>

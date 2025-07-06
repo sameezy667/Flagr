@@ -80,7 +80,8 @@ const App: React.FC = () => {
     const [toastMessage, setToastMessage] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const dragCounter = useRef(0);
-    const isMobile = useMediaQuery('(max-width: 767px)');
+    const isMobile = useMediaQuery('(max-width: 768px)');
+    const isTablet = useMediaQuery('(min-width: 769px) and (max-width: 1024px)');
 
     // Auth effect - runs once
     useEffect(() => {
@@ -464,7 +465,7 @@ const App: React.FC = () => {
     }
 
     return (
-        <div className="flex h-screen w-screen text-gray-300 bg-transparent font-sans">
+        <div className="flex h-screen w-screen text-gray-300 bg-transparent font-sans overflow-hidden">
             {toastMessage && <Toast message={toastMessage} onDismiss={() => setToastMessage(null)} />}
             {isDragging && <DropzoneOverlay />}
              <input
@@ -485,6 +486,7 @@ const App: React.FC = () => {
                 onRenameSession={handleRenameSession}
                 isExpanded={isSidebarExpanded}
                 onToggle={handleToggleSidebar}
+                isMobile={isMobile}
             />
             <main className="flex-1 flex flex-col overflow-hidden bg-neutral-900 transition-all duration-300">
                  {isMobile ? (
@@ -502,10 +504,10 @@ const App: React.FC = () => {
                         )}
                     </>
                 ) : (
-                    <div className="flex-1 grid grid-cols-1 md:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] md:gap-px md:bg-neutral-800/50 overflow-hidden">
+                    <div className="flex-1 grid grid-cols-1 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] xl:grid-cols-[minmax(0,3fr)_minmax(0,1fr)] gap-px bg-neutral-800/50 overflow-hidden">
                         {/* Left Panel: Main Content */}
                         <div className="flex flex-col overflow-y-auto bg-neutral-900">
-                            <div className="flex-1 p-4 md:p-8 animate-fadeIn">
+                            <div className="flex-1 p-4 sm:p-6 lg:p-8 animate-fadeIn">
                                 {renderMainPanelContent()}
                             </div>
                         </div>

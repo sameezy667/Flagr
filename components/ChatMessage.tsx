@@ -47,7 +47,8 @@ const MessageContent: React.FC<{ content: string }> = ({ content }) => {
                         prose-ul:my-2 prose-ol:my-2
                         prose-headings:my-3 prose-headings:text-white
                         prose-strong:text-white
-                        prose-a:text-spotify prose-a:no-underline hover:prose-a:underline">
+                        prose-a:text-spotify prose-a:no-underline hover:prose-a:underline
+                        prose-code:text-sm prose-pre:text-sm">
             <ReactMarkdown
                 remarkPlugins={[remarkGfm]}
                 components={{
@@ -61,13 +62,13 @@ const MessageContent: React.FC<{ content: string }> = ({ content }) => {
                                     style={vscDarkPlus as any}
                                     language={match[1]}
                                     PreTag="div"
-                                    className="!bg-neutral-900 rounded-lg !p-4 !text-sm"
+                                    className="!bg-neutral-900 rounded-lg !p-3 sm:!p-4 !text-xs sm:!text-sm"
                                 >
                                     {codeText}
                                 </SyntaxHighlighter>
                              </div>
                         ) : (
-                            <code className="bg-neutral-900 text-spotify rounded px-1.5 py-0.5 text-sm font-mono" {...props}>
+                            <code className="bg-neutral-900 text-spotify rounded px-1.5 py-0.5 text-xs sm:text-sm font-mono" {...props}>
                                 {children}
                             </code>
                         );
@@ -84,22 +85,22 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message, isLoading = false })
     const isAssistant = message.role === MessageRole.ASSISTANT;
 
     return (
-        <div className={`group flex items-start gap-3.5 animate-fadeInSlideUp ${!isAssistant ? 'flex-row-reverse' : ''}`}>
-            {isAssistant ? <FlagrIcon /> : <UserIcon />}
+        <div className={`group flex items-start ${isAssistant ? '' : 'flex-row-reverse'} animate-fadeInSlideUp ${typeof window !== 'undefined' && window.innerWidth <= 768 ? 'mb-3' : 'mb-2 sm:mb-4'} gap-2.5 sm:gap-3.5`}>
+            <div className="flex-shrink-0">
+                {isAssistant ? <FlagrIcon className="w-6 h-6 sm:w-7 sm:h-7" /> : <UserIcon className="w-6 h-6 sm:w-7 sm:h-7" />}
+            </div>
             <div className={`flex flex-col flex-1 w-0 ${isAssistant ? 'items-start' : 'items-end'}`}>
                  <div className="flex items-end gap-2">
-                    <div className={`relative max-w-full px-4 py-3 rounded-2xl ${
+                    <div className={`relative px-3 sm:px-4 py-2.5 sm:py-3 rounded-2xl ${
                         isAssistant 
                             ? 'bg-gradient-to-br from-neutral-800 to-neutral-800/80 text-gray-300 rounded-bl-none' 
                             : 'bg-gradient-to-br from-neutral-700 to-neutral-700/80 text-gray-100 rounded-br-none'
-                    }`}>
-                        
+                    } ${typeof window !== 'undefined' && window.innerWidth <= 768 ? 'max-w-[85vw]' : 'max-w-full'}`}>
                         {isLoading ? <LoadingIndicator /> : <MessageContent content={message.content} />}
-                        
                     </div>
                  </div>
                 {!isLoading && message.timestamp && (
-                     <p className="text-xs text-gray-500 mt-1.5 px-1">
+                     <p className="text-xs text-gray-500 mt-1 sm:mt-1.5 px-1">
                         {message.timestamp}
                     </p>
                 )}

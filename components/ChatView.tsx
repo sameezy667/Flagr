@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef } from 'react';
 import { MessageRole, ChatSession } from '../types';
 import ChatMessage from './ChatMessage';
@@ -27,7 +26,7 @@ const ChatView: React.FC<ChatViewProps> = ({ session, isProcessing }) => {
     }
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-4 sm:space-y-6">
             {history.map((msg) => (
                 <ChatMessage key={msg.id} message={msg} />
             ))}

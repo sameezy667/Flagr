@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { ChatSession, User } from '../types';
 import { PlusIcon, PencilIcon, TrashIcon } from '../constants';
@@ -15,6 +14,7 @@ interface SidebarProps {
     onToggle: () => void;
     user: User;
     onLogout: () => void;
+    isMobile: boolean;
 }
 
 const SessionItem: React.FC<{
@@ -90,30 +90,38 @@ const SessionItem: React.FC<{
     );
 };
 
-const Sidebar: React.FC<SidebarProps> = ({ sessions, activeSessionId, isExpanded, onNewChat, onSwitchSession, onDeleteSession, onRenameSession, onToggle, user, onLogout }) => {
+const Sidebar: React.FC<SidebarProps> = ({ sessions, activeSessionId, isExpanded, onNewChat, onSwitchSession, onDeleteSession, onRenameSession, onToggle, user, onLogout, isMobile }) => {
     return (
         <>
             {/* Overlay for mobile */}
             <div
-                className={`fixed inset-0 bg-black/60 z-30 md:hidden transition-opacity ${isExpanded ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+                className={`fixed inset-0 bg-black/60 z-30 transition-opacity duration-300 ${isMobile ? (isExpanded ? 'opacity-100' : 'opacity-0 pointer-events-none') : 'hidden'}`}
                 onClick={onToggle}
             ></div>
         
             <div className={`
                 relative glass-pane
                 bg-black/40 backdrop-blur-2xl border-r border-white/10
-                flex flex-col h-screen p-2 
-                transition-all duration-300 ease-in-out
-                ${isExpanded ? 'w-64' : 'w-20'}
+                flex flex-col h-screen 
+                transition-all duration-300 ease-in-out z-40
+                ${isMobile 
+                    ? `fixed left-0 top-0 ${isExpanded ? 'w-80' : 'w-0'} ${isExpanded ? 'translate-x-0' : '-translate-x-full'} transform`
+                    : `${isExpanded ? 'w-64' : 'w-20'}`
+                }
+                ${!isMobile && 'p-2'}
+                ${isMobile && isExpanded && 'p-4'}
+                ${isMobile && !isExpanded ? 'overflow-hidden' : ''}
             `}>
-                
-                <button
-                    onClick={onNewChat}
-                    className={`flex items-center w-full p-2.5 my-2 rounded-lg text-sm font-medium text-gray-200 bg-neutral-800 hover:bg-neutral-700/80 transition-all hover:-translate-y-0.5 ${isExpanded ? 'justify-between' : 'justify-center'}`}
-                >
-                    <span className={`${!isExpanded && 'md:hidden'}`}>New Chat</span>
-                    <PlusIcon className="w-4 h-4" />
-                </button>
+                {/* Only show New Chat button if sidebar is expanded (open) on mobile, or always on desktop */}
+                {(!isMobile || (isMobile && isExpanded)) && (
+                    <button
+                        onClick={onNewChat}
+                        className={`flex items-center w-full p-2.5 my-2 rounded-lg text-sm font-medium text-gray-200 bg-neutral-800 hover:bg-neutral-700/80 transition-all hover:-translate-y-0.5 ${isExpanded ? 'justify-between' : 'justify-center'}`}
+                    >
+                        <span className={`${!isExpanded && 'md:hidden'}`}>New Chat</span>
+                        <PlusIcon className="w-4 h-4" />
+                    </button>
+                )}
                 
                 <div className="flex-1 overflow-y-auto pr-1 -mr-2">
                     <p className={`px-2.5 pb-2 text-xs text-gray-500 font-semibold uppercase tracking-wider ${!isExpanded ? 'text-center' : ''}`}>{isExpanded ? 'Chat History' : 'Chats'}</p>
@@ -138,6 +146,7 @@ const Sidebar: React.FC<SidebarProps> = ({ sessions, activeSessionId, isExpanded
                         onLogout={onLogout}
                         isSidebarExpanded={isExpanded}
                         onToggleSidebar={onToggle}
+                        isMobile={isMobile}
                     />
                 </footer>
             </div>

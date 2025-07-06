@@ -42,16 +42,16 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
     };
 
     return (
-        <div className="flex items-center justify-center min-h-screen w-screen bg-transparent text-gray-300">
-            <div className="w-full max-w-md p-8 space-y-8 bg-black/40 backdrop-blur-2xl border border-white/10 rounded-2xl shadow-2xl glass-pane">
+        <div className="flex items-center justify-center min-h-screen w-screen bg-transparent text-gray-300 p-4">
+            <div className="w-full max-w-sm sm:max-w-md p-6 sm:p-8 space-y-6 sm:space-y-8 bg-black/40 backdrop-blur-2xl border border-white/10 rounded-2xl shadow-2xl glass-pane">
                 <div className="text-center">
-                    <div className="inline-block mb-6">
+                    <div className="inline-block mb-4 sm:mb-6">
                        <FlagrLogo showText={true} />
                     </div>
-                    <h1 className="text-3xl font-bold text-white">{isSignUp ? 'Create Account' : 'Welcome Back'}</h1>
-                    <p className="text-gray-400 mt-2">{isSignUp ? 'Sign up to start using Flagr' : 'Sign in to continue to Flagr'}</p>
+                    <h1 className="text-2xl sm:text-3xl font-bold text-white">{isSignUp ? 'Create Account' : 'Welcome Back'}</h1>
+                    <p className="text-sm sm:text-base text-gray-400 mt-2">{isSignUp ? 'Sign up to start using Flagr' : 'Sign in to continue to Flagr'}</p>
                 </div>
-                <form className="space-y-6" onSubmit={handleSubmit}>
+                <form className="space-y-4 sm:space-y-6" onSubmit={handleSubmit}>
                     <div>
                         <label htmlFor="email" className="text-sm font-medium text-gray-400">Email</label>
                         <input
@@ -62,14 +62,14 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
                             required
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
-                            className="mt-2 block w-full bg-neutral-900 border border-neutral-700 rounded-lg py-2.5 px-4 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-spotify focus:border-spotify transition"
+                            className="mt-2 block w-full bg-neutral-900 border border-neutral-700 rounded-lg py-2.5 px-4 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-spotify focus:border-spotify transition text-sm sm:text-base"
                             placeholder="your.email@example.com"
                         />
                     </div>
                     <div>
                         <div className="flex items-center justify-between">
                              <label htmlFor="password" className="text-sm font-medium text-gray-400">Password</label>
-                             {!isSignUp && <a href="#" className="text-sm text-spotify hover:underline">Forgot password?</a>}
+                             {!isSignUp && <a href="#" className="text-xs sm:text-sm text-spotify hover:underline">Forgot password?</a>}
                         </div>
                         <input
                             id="password"
@@ -79,7 +79,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
                             required
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
-                            className="mt-2 block w-full bg-neutral-900 border border-neutral-700 rounded-lg py-2.5 px-4 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-spotify focus:border-spotify transition"
+                            className="mt-2 block w-full bg-neutral-900 border border-neutral-700 rounded-lg py-2.5 px-4 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-spotify focus:border-spotify transition text-sm sm:text-base"
                             placeholder="••••••••"
                         />
                     </div>
@@ -88,7 +88,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
                         <button
                             type="submit"
                             disabled={isLoading}
-                            className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-spotify hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-neutral-900 focus:ring-spotify transition-all duration-300 transform active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed"
+                            className="w-full flex justify-center py-2.5 sm:py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-spotify hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-neutral-900 focus:ring-spotify transition-all duration-300 transform active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed"
                         >
                             {isLoading ? (
                                 <span className="inline-flex items-center">
@@ -104,7 +104,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
                         </button>
                     </div>
                 </form>
-                <p className="text-center text-sm text-gray-400">
+                <p className="text-center text-xs sm:text-sm text-gray-400">
                     {isSignUp ? (
                         <>
                             Already have an account?{' '}
