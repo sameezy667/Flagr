@@ -81,6 +81,11 @@ const App: React.FC = () => {
     const dragCounter = useRef(0);
     const isMobile = useMediaQuery('(max-width: 768px)');
 
+    // Debug logging
+    useEffect(() => {
+        console.log('Mobile detection:', isMobile, 'Sidebar expanded:', isSidebarExpanded);
+    }, [isMobile, isSidebarExpanded]);
+
     // Immediate mobile detection on mount
     useEffect(() => {
         const checkMobile = () => {
@@ -93,7 +98,7 @@ const App: React.FC = () => {
         checkMobile();
         window.addEventListener('resize', checkMobile);
         return () => window.removeEventListener('resize', checkMobile);
-    }, [isSidebarExpanded]);
+    }, []);
 
     // Auth effect - runs once
     useEffect(() => {
@@ -436,7 +441,12 @@ const App: React.FC = () => {
     };
 
     const handleToggleSidebar = () => {
-        setIsSidebarExpanded(prev => !prev);
+        console.log('Toggle sidebar clicked. Current state:', isSidebarExpanded, 'Mobile:', isMobile);
+        setIsSidebarExpanded(prev => {
+            const newState = !prev;
+            console.log('Setting sidebar to:', newState);
+            return newState;
+        });
     };
     
     const triggerFileUpload = () => {
@@ -484,7 +494,7 @@ const App: React.FC = () => {
     }
 
     return (
-        <div className="flex h-screen w-screen text-gray-300 bg-transparent font-sans overflow-hidden">
+        <div className={`flex h-screen w-screen text-gray-300 bg-transparent font-sans ${!isMobile ? 'overflow-hidden' : ''}`}>
             {toastMessage && <Toast message={toastMessage} onDismiss={() => setToastMessage(null)} />}
             {isDragging && <DropzoneOverlay />}
              <input
@@ -495,71 +505,87 @@ const App: React.FC = () => {
                 accept=".txt,.md,.rtf,.html,.xml,.pdf,.docx"
             />
             {/* Hamburger menu always visible on mobile */}
-            {isMobile && (
+            {isMobile && !isSidebarExpanded && (
                 <button
                     onClick={handleToggleSidebar}
                     className="fixed top-4 left-4 z-50 p-2 bg-black/60 rounded-md text-gray-200 hover:bg-black/80 md:hidden"
-                    style={{ display: isSidebarExpanded ? 'none' : 'block' }}
-                    aria-label="Open sidebar"
+                    aria-label="Toggle sidebar"
                 >
                     <svg className="w-7 h-7" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
                     </svg>
                 </button>
             )}
-            <Sidebar 
-                user={currentUser}
-                onLogout={handleLogout}
-                sessions={sessions}
-                activeSessionId={activeSessionId}
-                onNewChat={handleNewChat}
-                onSwitchSession={handleSwitchSession}
-                onDeleteSession={handleDeleteSession}
-                onRenameSession={handleRenameSession}
-                isExpanded={isSidebarExpanded}
-                onToggle={handleToggleSidebar}
-                isMobile={isMobile}
-            />
-            <main className="flex-1 flex flex-col overflow-hidden bg-neutral-900 transition-all duration-300">
-                 {isMobile ? (
-                    <>
-                        {activeSession && (
-                            <ChatPanel
-                                session={activeSession}
-                                isProcessing={isProcessing}
-                                onSendMessage={handleSendMessage}
-                                onUploadClick={triggerFileUpload}
-                                onToggleSidebar={handleToggleSidebar}
-                                isMobile={true}
-                                onViewAnalysis={() => setAnalysisModalOpen(true)}
-                            />
-                        )}
-                    </>
+            {/* On mobile, only show sidebar or chat, not both */}
+            {isMobile ? (
+                isSidebarExpanded ? (
+                    <Sidebar 
+                        user={currentUser}
+                        onLogout={handleLogout}
+                        sessions={sessions}
+                        activeSessionId={activeSessionId}
+                        onNewChat={handleNewChat}
+                        onSwitchSession={handleSwitchSession}
+                        onDeleteSession={handleDeleteSession}
+                        onRenameSession={handleRenameSession}
+                        isExpanded={isSidebarExpanded}
+                        onToggle={handleToggleSidebar}
+                        isMobile={isMobile}
+                    />
                 ) : (
-                    <div className="flex-1 grid grid-cols-1 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] xl:grid-cols-[minmax(0,3fr)_minmax(0,1fr)] gap-px bg-neutral-800/50 overflow-hidden">
-                        {/* Left Panel: Main Content */}
-                        <div className="flex flex-col overflow-y-auto bg-neutral-900">
-                            <div className="flex-1 p-4 sm:p-6 lg:p-8 animate-fadeIn">
-                                {renderMainPanelContent()}
+                    activeSession && (
+                        <ChatPanel
+                            session={activeSession}
+                            isProcessing={isProcessing}
+                            onSendMessage={handleSendMessage}
+                            onUploadClick={triggerFileUpload}
+                            onToggleSidebar={handleToggleSidebar}
+                            isMobile={true}
+                            onViewAnalysis={() => setAnalysisModalOpen(true)}
+                        />
+                    )
+                )
+            ) : (
+                // Desktop/tablet layout
+                <>
+                    <Sidebar 
+                        user={currentUser}
+                        onLogout={handleLogout}
+                        sessions={sessions}
+                        activeSessionId={activeSessionId}
+                        onNewChat={handleNewChat}
+                        onSwitchSession={handleSwitchSession}
+                        onDeleteSession={handleDeleteSession}
+                        onRenameSession={handleRenameSession}
+                        isExpanded={isSidebarExpanded}
+                        onToggle={handleToggleSidebar}
+                        isMobile={isMobile}
+                    />
+                    <main className="flex-1 flex flex-col overflow-hidden bg-neutral-900 transition-all duration-300">
+                        <div className="flex-1 grid grid-cols-1 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] xl:grid-cols-[minmax(0,3fr)_minmax(0,1fr)] gap-px bg-neutral-800/50 overflow-hidden">
+                            {/* Left Panel: Main Content */}
+                            <div className="flex flex-col overflow-y-auto bg-neutral-900">
+                                <div className="flex-1 p-4 sm:p-6 lg:p-8 animate-fadeIn">
+                                    {renderMainPanelContent()}
+                                </div>
+                            </div>
+                            {/* Right Panel: Chat */}
+                            <div className="flex flex-col bg-neutral-900">
+                                {activeSession && (
+                                    <ChatPanel 
+                                        session={activeSession}
+                                        isProcessing={isProcessing}
+                                        onSendMessage={handleSendMessage}
+                                        onUploadClick={triggerFileUpload}
+                                        onToggleSidebar={handleToggleSidebar}
+                                        isMobile={false}
+                                    />
+                                )}
                             </div>
                         </div>
-                        
-                        {/* Right Panel: Chat */}
-                        <div className="flex flex-col bg-neutral-900">
-                           {activeSession && (
-                                <ChatPanel 
-                                    session={activeSession}
-                                    isProcessing={isProcessing}
-                                    onSendMessage={handleSendMessage}
-                                    onUploadClick={triggerFileUpload}
-                                    onToggleSidebar={handleToggleSidebar}
-                                    isMobile={false}
-                                />
-                           )}
-                        </div>
-                    </div>
-                )}
-            </main>
+                    </main>
+                </>
+            )}
             {isAnalysisModalOpen && (
                 <AnalysisModal onClose={() => setAnalysisModalOpen(false)}>
                     {activeSession?.analysis && <AnalysisResultsView results={activeSession.analysis} />}

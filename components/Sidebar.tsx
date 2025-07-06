@@ -103,15 +103,16 @@ const Sidebar: React.FC<SidebarProps> = ({ sessions, activeSessionId, isExpanded
                 relative glass-pane
                 bg-black/40 backdrop-blur-2xl border-r border-white/10
                 flex flex-col h-screen 
-                transition-all duration-300 ease-in-out z-40
+                transition-all duration-300 ease-in-out z-[9999]
                 ${isMobile 
-                    ? `fixed left-0 top-0 ${isExpanded ? 'w-80' : 'w-0'} ${isExpanded ? 'translate-x-0' : '-translate-x-full'} transform`
+                    ? isExpanded 
+                        ? 'fixed left-0 top-0 w-80 translate-x-0 transform' // restore original width and remove debug bg
+                        : 'fixed left-0 top-0 w-0 -translate-x-full transform'
                     : `${isExpanded ? 'w-64' : 'w-20'}`
                 }
                 ${!isMobile && 'p-2'}
                 ${isMobile && isExpanded && 'p-4'}
-                ${isMobile && !isExpanded ? 'overflow-hidden' : ''}
-            `} style={{ boxShadow: isMobile && isExpanded ? '0 0 0 9999px rgba(0,0,0,0.3)' : undefined }}>
+            `}>
                 {/* Only show New Chat button if sidebar is expanded (open) on mobile, or always on desktop */}
                 {(!isMobile || (isMobile && isExpanded)) && (
                     <button
