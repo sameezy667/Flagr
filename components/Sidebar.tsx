@@ -96,7 +96,7 @@ const Sidebar: React.FC<SidebarProps> = ({ sessions, activeSessionId, isExpanded
             {/* Overlay for mobile */}
             <div
                 className={`fixed inset-0 bg-black/60 z-30 transition-opacity duration-300 ${isMobile ? (isExpanded ? 'opacity-100' : 'opacity-0 pointer-events-none') : 'hidden'}`}
-                onClick={onToggle}
+                onClick={() => { if (isMobile && isExpanded) onToggle(); }}
             ></div>
         
             <div className={`
@@ -111,7 +111,7 @@ const Sidebar: React.FC<SidebarProps> = ({ sessions, activeSessionId, isExpanded
                 ${!isMobile && 'p-2'}
                 ${isMobile && isExpanded && 'p-4'}
                 ${isMobile && !isExpanded ? 'overflow-hidden' : ''}
-            `}>
+            `} style={{ boxShadow: isMobile && isExpanded ? '0 0 0 9999px rgba(0,0,0,0.3)' : undefined }}>
                 {/* Only show New Chat button if sidebar is expanded (open) on mobile, or always on desktop */}
                 {(!isMobile || (isMobile && isExpanded)) && (
                     <button
