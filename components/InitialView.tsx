@@ -134,9 +134,12 @@ const InitialView: React.FC<InitialViewProps> = ({ onUploadClick, onRiskQuizClic
                 display: 'flex',
                 gap: '12px',
                 flexWrap: 'wrap',
-                minWidth: 400
+                minWidth: 400,
+                border: '3px solid red', // DEBUG: highlight container
+                background: 'rgba(255,255,0,0.2)' // DEBUG: highlight container
               }}
             >
+              <span style={{color: 'red', fontWeight: 'bold'}}>BUTTONS-DEBUG-123</span> {/* DEBUG: unique string */}
               <button
                 onClick={onRiskQuizClick}
                 style={{ minWidth: 180 }}
