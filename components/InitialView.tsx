@@ -76,9 +76,11 @@ const ActionCard: React.FC<ActionCardProps> = ({ icon, title, description, onCli
 
 interface InitialViewProps {
     onUploadClick: () => void;
+    onRiskQuizClick: () => void;
+    onGenerateTemplate: () => void;
 }
 
-const InitialView: React.FC<InitialViewProps> = ({ onUploadClick }) => {
+const InitialView: React.FC<InitialViewProps> = ({ onUploadClick, onRiskQuizClick, onGenerateTemplate }) => {
     const cardData = [
         {
             icon: <UploadIcon className="w-5 h-5 sm:w-6 sm:h-6 text-spotify" />,
@@ -138,14 +140,14 @@ const InitialView: React.FC<InitialViewProps> = ({ onUploadClick }) => {
               <button
                 style={{ minWidth: 180 }}
                 className="px-5 py-2.5 rounded-full font-bold text-spotify border-2 border-spotify bg-black shadow-lg transition-all duration-200 hover:bg-spotify hover:text-black hover:scale-105 focus:outline-none focus:ring-2 focus:ring-spotify text-base"
-                onClick={() => alert('Take the Risk Quiz clicked!')}
+                onClick={onRiskQuizClick}
               >
                 <span role="img" aria-label="Quiz">📝</span> Take the Risk Quiz
               </button>
               <button
                 style={{ minWidth: 180 }}
                 className="px-5 py-2.5 rounded-full font-bold text-spotify border-2 border-spotify bg-black shadow-lg transition-all duration-200 hover:bg-spotify hover:text-black hover:scale-105 focus:outline-none focus:ring-2 focus:ring-spotify text-base"
-                onClick={() => alert('Generate Template clicked!')}
+                onClick={onGenerateTemplate}
               >
                 Generate Template
               </button>

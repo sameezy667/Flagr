@@ -685,6 +685,8 @@ const App: React.FC = () => {
         return (
             <InitialView
                 onUploadClick={triggerFileUpload}
+                onRiskQuizClick={() => setShowRiskQuiz(true)}
+                onGenerateTemplate={() => setShowTemplateModal(true)}
             />
         );
     };
