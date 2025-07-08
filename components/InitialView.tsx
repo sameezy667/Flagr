@@ -132,19 +132,23 @@ const InitialView: React.FC<InitialViewProps> = ({ onUploadClick }) => {
                 display: 'flex',
                 gap: '12px',
                 flexWrap: 'wrap',
-                minWidth: 400,
-                border: '3px solid red', // DEBUG: highlight container
-                background: 'rgba(255,255,0,0.2)' // DEBUG: highlight container
+                minWidth: 400
               }}
             >
-              <span style={{color: 'red', fontWeight: 'bold'}}>BUTTONS-DEBUG-123</span> {/* DEBUG: unique string */}
-              <div style={{background: 'blue', color: 'white', padding: 8}}>TEST-STATIC-TEXT-456</div> {/* DEBUG: static text */}
-              <div style={{ minWidth: 180, background: 'red', color: 'white', zIndex: 100000, padding: 8 }}>
+              <button
+                style={{ minWidth: 180 }}
+                className="px-5 py-2.5 rounded-full font-bold text-spotify border-2 border-spotify bg-black shadow-lg transition-all duration-200 hover:bg-spotify hover:text-black hover:scale-105 focus:outline-none focus:ring-2 focus:ring-spotify text-base"
+                onClick={() => alert('Take the Risk Quiz clicked!')}
+              >
                 <span role="img" aria-label="Quiz">📝</span> Take the Risk Quiz
-              </div>
-              <div style={{ minWidth: 180, background: 'red', color: 'white', zIndex: 100000, padding: 8 }}>
+              </button>
+              <button
+                style={{ minWidth: 180 }}
+                className="px-5 py-2.5 rounded-full font-bold text-spotify border-2 border-spotify bg-black shadow-lg transition-all duration-200 hover:bg-spotify hover:text-black hover:scale-105 focus:outline-none focus:ring-2 focus:ring-spotify text-base"
+                onClick={() => alert('Generate Template clicked!')}
+              >
                 Generate Template
-              </div>
+              </button>
             </div>
             {/* Remove old Take the Risk Quiz button from below the title */}
             <div className="mb-6 sm:mb-8 animate-fadeInSlideUp">
