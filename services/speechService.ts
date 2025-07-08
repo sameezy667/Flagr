@@ -18,7 +18,7 @@ export function stopSpeaking() {
 }
 
 // Speech-to-Text (STT)
-let recognition: SpeechRecognition | null = null;
+let recognition: any | null = null;
 let isRecognizing = false;
 
 export function startRecognition(
@@ -37,7 +37,7 @@ export function startRecognition(
   recognition.interimResults = false;
   recognition.maxAlternatives = 1;
 
-  recognition.onresult = (event: SpeechRecognitionEvent) => {
+  recognition.onresult = (event: any) => {
     const transcript = event.results[0][0].transcript;
     onResult(transcript);
   };

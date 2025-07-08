@@ -87,7 +87,6 @@ const App: React.FC = () => {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const dragCounter = useRef(0);
     const isMobile = useMediaQuery('(max-width: 768px)');
-    const { isDarkMode, toggle } = useDarkMode();
     const [showRiskQuiz, setShowRiskQuiz] = useState(false);
     const [fullText, setFullText] = useState<string>('');
     const [showTemplateModal, setShowTemplateModal] = useState(false);
