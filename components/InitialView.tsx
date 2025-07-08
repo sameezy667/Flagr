@@ -47,9 +47,10 @@ const ActionCard: React.FC<ActionCardProps> = ({ icon, title, description, onCli
 
 interface InitialViewProps {
     onUploadClick: () => void;
+    onRiskQuizClick?: () => void;
 }
 
-const InitialView: React.FC<InitialViewProps> = ({ onUploadClick }) => {
+const InitialView: React.FC<InitialViewProps> = ({ onUploadClick, onRiskQuizClick }) => {
     const cardData = [
         {
             icon: <UploadIcon className="w-5 h-5 sm:w-6 sm:h-6 text-spotify" />,
@@ -94,6 +95,14 @@ const InitialView: React.FC<InitialViewProps> = ({ onUploadClick }) => {
                 <p className="text-base sm:text-lg text-gray-400 max-w-2xl">
                     Analyze documents, detect hidden flags, and translate complex language into clear, understandable insights with Flagr.
                 </p>
+                {onRiskQuizClick && (
+                    <button
+                        onClick={onRiskQuizClick}
+                        className="mt-5 px-5 py-2 bg-spotify text-white rounded-lg font-semibold shadow hover:bg-spotify/80 transition"
+                    >
+                        Take the Risk Quiz
+                    </button>
+                )}
             </div>
             
             <div className="space-y-4 sm:space-y-6 animate-fadeInSlideUp" style={{animationDelay: '150ms'}}>

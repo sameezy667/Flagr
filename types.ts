@@ -41,6 +41,7 @@ export interface Flag {
     clause: string;
     explanation: string;
     severity: 'Low' | 'Medium' | 'High';
+    suggestedRewrite: string;
 }
 
 export interface Risk {
@@ -67,6 +68,7 @@ export interface AIAnalysisData {
         overallSummary: string;
         recommendations: Insight[];
     };
+    detectedDocType?: string;
 }
 
 // This is the full analysis object used in the app state, combining AI data with client-side processed info.

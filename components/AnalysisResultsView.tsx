@@ -4,6 +4,38 @@ import {
     PlainLanguageIcon, LegalFindingsIcon, RiskAssessmentIcon, AiInsightsIcon, StatsIcon
 } from '../constants';
 
+const getSeverityDot = (severity: 'Low' | 'Medium' | 'High') => {
+    const color = severity === 'High' ? 'bg-red-500' : severity === 'Medium' ? 'bg-yellow-400' : 'bg-sky-400';
+    return <span className={`inline-block w-2.5 h-2.5 rounded-full mr-2 ${color}`}></span>;
+};
+
+const ClauseExplorer: React.FC<{ flags: Flag[] }> = ({ flags }) => (
+    <aside className="sticky top-4 bg-neutral-900/80 border border-neutral-700/60 rounded-xl p-4 mb-6 max-h-[80vh] overflow-y-auto shadow-lg">
+        <h3 className="text-sm font-bold text-white mb-3">Flagged Clauses</h3>
+        <ul className="space-y-2">
+            {flags.map(flag => (
+                <li key={flag.id}>
+                    <button
+                        className="flex items-center w-full text-left px-2 py-1 rounded hover:bg-neutral-800/80 transition group"
+                        onClick={() => {
+                            const el = document.getElementById(flag.id);
+                            if (el) {
+                                el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                el.classList.add('ring-4', 'ring-spotify', 'transition');
+                                setTimeout(() => el.classList.remove('ring-4', 'ring-spotify', 'transition'), 1200);
+                            }
+                        }}
+                    >
+                        {getSeverityDot(flag.severity)}
+                        <span className="font-medium text-white mr-2">{flag.title}</span>
+                        <span className="text-xs text-gray-400">[{flag.severity}]</span>
+                    </button>
+                </li>
+            ))}
+        </ul>
+    </aside>
+);
+
 const getSeverityClass = (severity: 'Low' | 'Medium' | 'High') => {
     switch (severity) {
         case 'High': return 'bg-red-500/20 text-red-400 border-red-500/30 shadow-[0_0_10px_rgba(239,68,68,0.35)]';
@@ -56,9 +88,18 @@ const FlagCard: React.FC<{ flag: Flag }> = ({ flag }) => (
             <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${getSeverityClass(flag.severity)}`}>{flag.severity}</span>
         </div>
         <blockquote className="text-sm text-neutral-400 border-l-2 border-spotify/50 pl-3 my-2 italic">
-            "{flag.clause}"
+            <span id={flag.id}>"{flag.clause}"</span>
         </blockquote>
         <p className="text-sm text-neutral-300 mt-2">{flag.explanation}</p>
+        {flag.suggestedRewrite && (
+            <div className="mt-4 p-3 bg-spotify/10 border-l-4 border-spotify rounded">
+                <div className="flex items-center gap-2 mb-1">
+                    <span className="text-spotify text-lg">💡</span>
+                    <span className="font-semibold text-spotify">Suggestion:</span>
+                </div>
+                <p className="text-sm text-spotify font-medium">{flag.suggestedRewrite}</p>
+            </div>
+        )}
     </div>
 );
 
@@ -83,7 +124,6 @@ const RiskBar: React.FC<{ risk: Risk }> = ({ risk }) => {
     );
 };
 
-
 const InsightCard: React.FC<{ insight: Insight }> = ({ insight }) => (
      <div className="p-4 rounded-lg bg-neutral-800/50 border border-neutral-700/80">
         <h4 className="font-semibold text-white mb-1.5">{insight.recommendation}</h4>
@@ -91,80 +131,86 @@ const InsightCard: React.FC<{ insight: Insight }> = ({ insight }) => (
     </div>
 );
 
-
 const AnalysisResultsView: React.FC<{ results: AnalysisResult }> = ({ results }) => {
+    const detectedType = results.detectedDocType || results.docType || 'Uploaded Document';
     return (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Main Column */}
-            <div className="lg:col-span-2 space-y-6">
-                <AnalysisCard
-                    icon={<PlainLanguageIcon className="w-6 h-6" />}
-                    title="Plain Language Summary"
-                    className="animate-stagger-in"
-                    style={{ animationDelay: '0ms'}}
-                >
-                    <p className="text-neutral-300 leading-relaxed">{results.plainLanguageSummary}</p>
-                </AnalysisCard>
-                <AnalysisCard
-                    icon={<LegalFindingsIcon className="w-6 h-6" />}
-                    title="Flags Found"
-                    className="animate-stagger-in"
-                    style={{ animationDelay: '100ms'}}
-                >
-                    <div className="space-y-4">
-                        {results.flags.length > 0 ? (
-                            results.flags.map(flag => <FlagCard key={flag.id} flag={flag} />)
-                        ) : (
-                            <p className="text-neutral-400">No significant flags were detected in the document.</p>
-                        )}
-                    </div>
-                </AnalysisCard>
-            </div>
-
-            {/* Side Column */}
-            <div className="lg:col-span-1 space-y-6">
-                 <AnalysisCard
-                    icon={<StatsIcon className="w-6 h-6" />}
-                    title="Document Statistics"
-                    className="animate-stagger-in"
-                    style={{ animationDelay: '200ms'}}
-                >
-                    <div className="space-y-3">
-                        <p className="text-sm font-medium text-white">
-                            <span className="text-neutral-400 font-normal">Detected Type: </span>{results.docType}
-                        </p>
-                        <div className="grid grid-cols-2 gap-3 pt-2 text-sm">
-                            <div><p className="text-neutral-400">Word Count</p><p className="text-xl font-semibold text-white">{results.stats.words.toLocaleString()}</p></div>
-                            <div><p className="text-neutral-400">Characters</p><p className="text-xl font-semibold text-white">{results.stats.characters.toLocaleString()}</p></div>
-                            <div><p className="text-neutral-400">Sentences</p><p className="text-xl font-semibold text-white">{results.stats.sentences.toLocaleString()}</p></div>
-                            <div><p className="text-neutral-400">Reading Time</p><p className="text-xl font-semibold text-white">~{results.stats.readingTime} min</p></div>
+        <>
+            <h3 className="text-xl font-bold text-white mb-4">Analysis for: <strong>{detectedType}</strong></h3>
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                {/* Clause Explorer Sidebar */}
+                <div className="lg:col-span-1 hidden lg:block">
+                    <ClauseExplorer flags={results.flags} />
+                </div>
+                {/* Main Column */}
+                <div className="lg:col-span-2 space-y-6">
+                    <AnalysisCard
+                        icon={<PlainLanguageIcon className="w-6 h-6" />}
+                        title="Plain Language Summary"
+                        className="animate-stagger-in"
+                        style={{ animationDelay: '0ms'}}
+                    >
+                        <p className="text-neutral-300 leading-relaxed">{results.plainLanguageSummary}</p>
+                    </AnalysisCard>
+                    <AnalysisCard
+                        icon={<LegalFindingsIcon className="w-6 h-6" />}
+                        title="Flags Found"
+                        className="animate-stagger-in"
+                        style={{ animationDelay: '100ms'}}
+                    >
+                        <div className="space-y-4">
+                            {results.flags.length > 0 ? (
+                                results.flags.map(flag => <FlagCard key={flag.id} flag={flag} />)
+                            ) : (
+                                <p className="text-neutral-400">No significant flags were detected in the document.</p>
+                            )}
                         </div>
-                    </div>
-                </AnalysisCard>
-                 <AnalysisCard
-                    icon={<RiskAssessmentIcon className="w-6 h-6" />}
-                    title="Risk Assessment"
-                    className="animate-stagger-in"
-                    style={{ animationDelay: '300ms'}}
-                >
-                    <div className="space-y-4">
-                        <p className="text-sm text-neutral-300 mb-2">{results.riskAssessment.overallSummary}</p>
-                         {results.riskAssessment.risks.map((risk, i) => <RiskBar key={i} risk={risk} />)}
-                    </div>
-                </AnalysisCard>
-                 <AnalysisCard
-                    icon={<AiInsightsIcon className="w-6 h-6" />}
-                    title="AI-Powered Insights"
-                    className="animate-stagger-in"
-                    style={{ animationDelay: '400ms'}}
-                >
-                    <div className="space-y-4">
-                       <p className="text-sm text-neutral-300 mb-2">{results.aiInsights.overallSummary}</p>
-                       {results.aiInsights.recommendations.map(insight => <InsightCard key={insight.id} insight={insight} />)}
-                    </div>
-                </AnalysisCard>
+                    </AnalysisCard>
+                </div>
+                {/* Side Column */}
+                <div className="lg:col-span-1 space-y-6">
+                     <AnalysisCard
+                        icon={<StatsIcon className="w-6 h-6" />}
+                        title="Document Statistics"
+                        className="animate-stagger-in"
+                        style={{ animationDelay: '200ms'}}
+                    >
+                        <div className="space-y-3">
+                            <p className="text-sm font-medium text-white">
+                                <span className="text-neutral-400 font-normal">Detected Type: </span>{results.docType}
+                            </p>
+                            <div className="grid grid-cols-2 gap-3 pt-2 text-sm">
+                                <div><p className="text-neutral-400">Word Count</p><p className="text-xl font-semibold text-white">{results.stats.words.toLocaleString()}</p></div>
+                                <div><p className="text-neutral-400">Characters</p><p className="text-xl font-semibold text-white">{results.stats.characters.toLocaleString()}</p></div>
+                                <div><p className="text-neutral-400">Sentences</p><p className="text-xl font-semibold text-white">{results.stats.sentences.toLocaleString()}</p></div>
+                                <div><p className="text-neutral-400">Reading Time</p><p className="text-xl font-semibold text-white">~{results.stats.readingTime} min</p></div>
+                            </div>
+                        </div>
+                    </AnalysisCard>
+                     <AnalysisCard
+                        icon={<RiskAssessmentIcon className="w-6 h-6" />}
+                        title="Risk Assessment"
+                        className="animate-stagger-in"
+                        style={{ animationDelay: '300ms'}}
+                    >
+                        <div className="space-y-4">
+                            <p className="text-sm text-neutral-300 mb-2">{results.riskAssessment.overallSummary}</p>
+                             {results.riskAssessment.risks.map((risk, i) => <RiskBar key={i} risk={risk} />)}
+                        </div>
+                    </AnalysisCard>
+                     <AnalysisCard
+                        icon={<AiInsightsIcon className="w-6 h-6" />}
+                        title="AI-Powered Insights"
+                        className="animate-stagger-in"
+                        style={{ animationDelay: '400ms'}}
+                    >
+                        <div className="space-y-4">
+                           <p className="text-sm text-neutral-300 mb-2">{results.aiInsights.overallSummary}</p>
+                           {results.aiInsights.recommendations.map(insight => <InsightCard key={insight.id} insight={insight} />)}
+                        </div>
+                    </AnalysisCard>
+                </div>
             </div>
-        </div>
+        </>
     );
 };
 

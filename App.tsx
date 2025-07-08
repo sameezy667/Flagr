@@ -6,6 +6,7 @@ import AnalysisResultsView from './components/AnalysisResultsView';
 import AnalysisLoadingView from './components/AnalysisLoadingView';
 import AnalysisModal from './components/AnalysisModal';
 import LoginPage from './components/LoginPage';
+import RiskQuiz from './components/RiskQuiz';
 import { Message, MessageRole, ChatSession, User, AnalysisResult } from './types';
 import { v4 as uuidv4 } from 'uuid';
 import { generateTitleFromMessage, streamChatResponse, generateDocumentAnalysis } from './services/llama-api.services';
@@ -13,6 +14,7 @@ import { storageService } from './services/storageService';
 import { firebaseService } from './services/firebaseService';
 import { extractTextFromFile, cleanText, detectDocumentType, getTextStats } from './services/documentParser';
 import { CheckIcon, FlagrLogo } from './constants';
+import { useDarkMode } from 'usehooks-ts';
 
 const useMediaQuery = (query: string) => {
     const [matches, setMatches] = useState(false);
@@ -80,6 +82,8 @@ const App: React.FC = () => {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const dragCounter = useRef(0);
     const isMobile = useMediaQuery('(max-width: 768px)');
+    const { isDarkMode, toggle } = useDarkMode();
+    const [showRiskQuiz, setShowRiskQuiz] = useState(false);
 
     // Debug logging
     useEffect(() => {
@@ -468,6 +472,21 @@ const App: React.FC = () => {
         if (activeSession?.analysis) {
             return <AnalysisResultsView results={activeSession.analysis} />;
         }
+        if (!activeSessionId) {
+            return (
+                <>
+                    <InitialView
+                        onUploadClick={triggerFileUpload}
+                        onRiskQuizClick={() => setShowRiskQuiz(true)}
+                    />
+                    {showRiskQuiz && (
+                        <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/70 backdrop-blur animate-fadeIn">
+                            <RiskQuiz onClose={() => setShowRiskQuiz(false)} />
+                        </div>
+                    )}
+                </>
+            );
+        }
         return <InitialView onUploadClick={triggerFileUpload} />;
     };
 
@@ -531,6 +550,8 @@ const App: React.FC = () => {
                         isExpanded={isSidebarExpanded}
                         onToggle={handleToggleSidebar}
                         isMobile={isMobile}
+                        isDarkMode={isDarkMode}
+                        toggleDarkMode={toggle}
                     />
                 ) : (
                     activeSession && (
@@ -560,6 +581,8 @@ const App: React.FC = () => {
                         isExpanded={isSidebarExpanded}
                         onToggle={handleToggleSidebar}
                         isMobile={isMobile}
+                        isDarkMode={isDarkMode}
+                        toggleDarkMode={toggle}
                     />
                     <main className="flex-1 flex flex-col overflow-hidden bg-neutral-900 transition-all duration-300">
                         <div className="flex-1 grid grid-cols-1 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] xl:grid-cols-[minmax(0,3fr)_minmax(0,1fr)] gap-px bg-neutral-800/50 overflow-hidden">

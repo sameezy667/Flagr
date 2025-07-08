@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { ChatSession, User } from '../types';
 import { PlusIcon, PencilIcon, TrashIcon } from '../constants';
 import UserProfile from './UserProfile';
+import { Sun, Moon } from 'lucide-react';
 
 interface SidebarProps {
     sessions: ChatSession[];
@@ -15,6 +16,8 @@ interface SidebarProps {
     user: User;
     onLogout: () => void;
     isMobile: boolean;
+    isDarkMode: boolean;
+    toggleDarkMode: () => void;
 }
 
 const SessionItem: React.FC<{
@@ -90,7 +93,7 @@ const SessionItem: React.FC<{
     );
 };
 
-const Sidebar: React.FC<SidebarProps> = ({ sessions, activeSessionId, isExpanded, onNewChat, onSwitchSession, onDeleteSession, onRenameSession, onToggle, user, onLogout, isMobile }) => {
+const Sidebar: React.FC<SidebarProps> = ({ sessions, activeSessionId, isExpanded, onNewChat, onSwitchSession, onDeleteSession, onRenameSession, onToggle, user, onLogout, isMobile, isDarkMode, toggleDarkMode }) => {
     return (
         <>
             {/* Overlay for mobile */}
@@ -124,7 +127,7 @@ const Sidebar: React.FC<SidebarProps> = ({ sessions, activeSessionId, isExpanded
                     </button>
                 )}
                 
-                <div className="flex-1 overflow-y-auto pr-1 -mr-2">
+                <div className="flex-1 overflow-y-auto h-full pr-1 -mr-2">
                     <p className={`px-2.5 pb-2 text-xs text-gray-500 font-semibold uppercase tracking-wider ${!isExpanded ? 'text-center' : ''}`}>{isExpanded ? 'Chat History' : 'Chats'}</p>
                     <nav className="space-y-1">
                         {sessions.map(session => (
@@ -142,7 +145,15 @@ const Sidebar: React.FC<SidebarProps> = ({ sessions, activeSessionId, isExpanded
                 </div>
 
                 <footer className="mt-auto pt-2 border-t border-neutral-800">
-                     <UserProfile 
+                    <button
+                        className="w-full flex items-center justify-center gap-2 p-2 mb-2 rounded-lg bg-neutral-800 hover:bg-neutral-700/80 text-gray-200 transition-all"
+                        onClick={toggleDarkMode}
+                        aria-label="Toggle dark mode"
+                    >
+                        {isDarkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+                        <span>{isDarkMode ? 'Light Mode' : 'Dark Mode'}</span>
+                    </button>
+                    <UserProfile 
                         user={user}
                         onLogout={onLogout}
                         isSidebarExpanded={isExpanded}

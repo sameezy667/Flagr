@@ -15,16 +15,20 @@ function getDocumentAnalysisPrompt(docType: string): string {
   return `You are an expert AI legal assistant. Your task is to analyze a ${docType} and return a structured JSON object. The JSON output must conform to this exact TypeScript interface:
 interface AIAnalysisData {
   plainLanguageSummary: string;
-  flags: { id: string; title: string; clause: string; explanation: string; severity: 'Low' | 'Medium' | 'High'; }[];
+  flags: { id: string; title: string; clause: string; explanation: string; severity: 'Low' | 'Medium' | 'High'; suggestedRewrite: string; }[];
   riskAssessment: { overallSummary: string; risks: { area: string; assessment: string; score: number; }[]; };
   aiInsights: { overallSummary: string; recommendations: { id: string; recommendation: string; justification: string; }[]; };
+  detectedDocType?: string;
 }
+
+First, as a preliminary step, identify the most likely type of this document (e.g., 'Employment Agreement', 'Privacy Policy', 'Terms of Service'). Add this identification to the final JSON object under a key called 'detectedDocType'. Then, proceed with the rest of the analysis as requested.
 
 GUIDELINES:
 1.  **plainLanguageSummary**: Concise, neutral summary in simple language.
 2.  **flags**: Look for POWER EXPANSION, VAGUE LANGUAGE, RIGHTS RESTRICTIONS, SURVEILLANCE, EMERGENCY POWERS, FINANCIAL IMPACT. 'clause' must be an exact quote. If none, return [].
 3.  **riskAssessment**: Provide an 'overallSummary' and list 'risks' with a 'score' from 1-10.
 4.  **aiInsights**: Provide an 'overallSummary' and 'recommendations'.
+5.  **suggestedRewrite**: For each flag you create, also provide a 'suggestedRewrite' property. This should contain a rewritten version of the clause that is safer and more favorable to the user.
 Generate at least 2-3 flags, 2-3 risks, and 2-3 insights for a complex document.
 `;
 }
