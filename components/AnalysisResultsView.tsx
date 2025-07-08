@@ -2,44 +2,17 @@ import React, { useRef, useState, useEffect } from 'react';
 import ReactDOM from 'react-dom';
 import { AnalysisResult, Flag, Risk, Insight } from '../types';
 import {
-    PlainLanguageIcon, LegalFindingsIcon, RiskAssessmentIcon, AiInsightsIcon, StatsIcon, SpeakerIcon
+    PlainLanguageIcon, LegalFindingsIcon, RiskAssessmentIcon, AiInsightsIcon, SpeakerIcon
 } from '../constants';
 import { speakText, stopSpeaking } from '../services/speechService';
 import jsPDF from 'jspdf';
 import { v4 as uuidv4 } from 'uuid';
-import { Document, Packer, Paragraph, TextRun, HeadingLevel } from 'docx';
+import { Document, Packer, Paragraph, HeadingLevel } from 'docx';
 
 const getSeverityDot = (severity: 'Low' | 'Medium' | 'High') => {
     const color = severity === 'High' ? 'bg-red-500' : severity === 'Medium' ? 'bg-yellow-400' : 'bg-sky-400';
     return <span className={`inline-block w-2.5 h-2.5 rounded-full mr-2 ${color}`}></span>;
 };
-
-const ClauseExplorer: React.FC<{ flags: Flag[] }> = ({ flags }) => (
-    <aside className="sticky top-4 bg-neutral-900/80 border border-neutral-700/60 rounded-xl p-4 mb-6 max-h-[80vh] overflow-y-auto shadow-lg">
-        <h3 className="text-sm font-bold text-white mb-3">Flagged Clauses</h3>
-        <ul className="space-y-2">
-            {flags.map(flag => (
-                <li key={flag.id}>
-                    <button
-                        className="flex items-center w-full text-left px-2 py-1 rounded hover:bg-neutral-800/80 transition group"
-                        onClick={() => {
-                            const el = document.getElementById(flag.id);
-                            if (el) {
-                                el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                                el.classList.add('ring-4', 'ring-spotify', 'transition');
-                                setTimeout(() => el.classList.remove('ring-4', 'ring-spotify', 'transition'), 1200);
-                            }
-                        }}
-                    >
-                        {getSeverityDot(flag.severity)}
-                        <span className="font-medium text-white mr-2">{flag.title}</span>
-                        <span className="text-xs text-gray-400">[{flag.severity}]</span>
-                    </button>
-                </li>
-            ))}
-        </ul>
-    </aside>
-);
 
 const getSeverityClass = (severity: 'Low' | 'Medium' | 'High') => {
     switch (severity) {

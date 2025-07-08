@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { ChatSession, User } from '../types';
 import { PlusIcon, PencilIcon, TrashIcon } from '../constants';
 import UserProfile from './UserProfile';
-import { Sun, Moon, BarChart2, Clock } from 'lucide-react';
+import { BarChart2, Clock } from 'lucide-react';
 
 interface SidebarProps {
     sessions: ChatSession[];
@@ -16,9 +16,6 @@ interface SidebarProps {
     user: User;
     onLogout: () => void;
     isMobile: boolean;
-    isDarkMode: boolean;
-    toggleDarkMode: () => void;
-    onRiskQuizClick?: () => void;
     onShowAnalytics?: () => void;
     onShowHistory?: () => void;
 }
@@ -96,7 +93,7 @@ const SessionItem: React.FC<{
     );
 };
 
-const Sidebar: React.FC<SidebarProps> = ({ sessions, activeSessionId, isExpanded, onNewChat, onSwitchSession, onDeleteSession, onRenameSession, onToggle, user, onLogout, isMobile, isDarkMode, toggleDarkMode, onRiskQuizClick, onShowAnalytics, onShowHistory }) => {
+const Sidebar: React.FC<SidebarProps> = ({ sessions, activeSessionId, isExpanded, onNewChat, onSwitchSession, onDeleteSession, onRenameSession, onToggle, user, onLogout, isMobile, onShowAnalytics, onShowHistory }) => {
     return (
         <>
             {/* Overlay for mobile */}

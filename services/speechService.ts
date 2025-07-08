@@ -57,4 +57,17 @@ export function stopRecognition() {
     recognition.stop();
     isRecognizing = false;
   }
-} 
+}
+
+// Add type declarations for browsers that do not have them
+declare global {
+  interface Window {
+    SpeechRecognition: typeof SpeechRecognition;
+    webkitSpeechRecognition: typeof SpeechRecognition;
+  }
+}
+// If types are not available, declare them as any
+// @ts-ignore
+type SpeechRecognition = any;
+// @ts-ignore
+type SpeechRecognitionEvent = any; 

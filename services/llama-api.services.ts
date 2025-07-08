@@ -162,7 +162,7 @@ export async function generateContractTemplate(contractType: string): Promise<{ 
       try {
         parsed = JSON5.parse(jsonMatch[0]);
       } catch (err) {
-        error = err;
+        // error is not used, so just ignore
       }
     }
     // If not a valid object, try to extract an array
@@ -183,7 +183,7 @@ export async function generateContractTemplate(contractType: string): Promise<{ 
       const allObjects = messageContent.match(/\{[^}]+\}/g);
       if (allObjects && allObjects.length > 1) {
         try {
-          const flags = allObjects.map(obj => JSON5.parse(obj));
+          const flags = allObjects.map((obj: any) => JSON5.parse(obj));
           parsed = { template: '', flags };
         } catch (err) {
           error = err;

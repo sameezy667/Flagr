@@ -89,7 +89,6 @@ const App: React.FC = () => {
     const isMobile = useMediaQuery('(max-width: 768px)');
     const { isDarkMode, toggle } = useDarkMode();
     const [showRiskQuiz, setShowRiskQuiz] = useState(false);
-    const [ocrProcessing, setOcrProcessing] = useState(false);
     const [fullText, setFullText] = useState<string>('');
     const [showTemplateModal, setShowTemplateModal] = useState(false);
     const [templateType, setTemplateType] = useState('Freelance Contract');
@@ -400,7 +399,6 @@ const App: React.FC = () => {
         try {
             let text = '';
             if (file.type.startsWith('image/')) {
-                setOcrProcessing(true);
                 setToastMessage('Extracting text from image...');
                 // Convert image to grayscale using a canvas
                 const img = document.createElement('img');
@@ -437,10 +435,8 @@ const App: React.FC = () => {
                     config: { tessedit_pageseg_mode: 6 }
                 } as any);
                 text = ocrText;
-                setOcrProcessing(false);
                 setToastMessage(null);
             } else if (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) {
-                setOcrProcessing(true);
                 setToastMessage('Extracting text from PDF...');
                 const reader = new FileReader();
                 const arrayBuffer = await new Promise<ArrayBuffer>((resolve, reject) => {
@@ -457,7 +453,6 @@ const App: React.FC = () => {
                     pdfText += pageText + '\n';
                 }
                 text = pdfText;
-                setOcrProcessing(false);
                 setToastMessage(null);
             } else {
                 text = await extractTextFromFile(file);
@@ -470,7 +465,6 @@ const App: React.FC = () => {
                  alert(`File '${file.name}' is empty or could not be read.`);
             }
         } catch(error) {
-            setOcrProcessing(false);
             setToastMessage(null);
             alert(`Error processing file '${file.name}': ${error instanceof Error ? error.message : 'An unknown error occurred'}`);
             console.error(error);

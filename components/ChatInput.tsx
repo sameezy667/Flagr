@@ -61,7 +61,6 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSubmit, isLoading, onUploadClic
     };
 
     const canSubmit = content.trim() && !isLoading;
-    const showLongPlaceholder = !isLoading && !hasStartedChat;
     const placeholderText = isLoading 
         ? "Analyzing..." 
         : hasStartedChat 
