@@ -14,7 +14,6 @@ import { storageService } from './services/storageService';
 import { firebaseService } from './services/firebaseService';
 import { extractTextFromFile, cleanText, detectDocumentType, getTextStats } from './services/documentParser';
 import { CheckIcon, FlagrLogo } from './constants';
-import { useDarkMode } from 'usehooks-ts';
 import Tesseract from 'tesseract.js';
 import * as pdfjsLib from 'pdfjs-dist';
 import SignaturePad from './components/SignaturePad';

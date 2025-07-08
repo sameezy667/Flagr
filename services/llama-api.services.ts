@@ -156,13 +156,12 @@ export async function generateContractTemplate(contractType: string): Promise<{ 
     console.log('Raw AI contract template output:', messageContent);
     // Try to extract a valid JSON object
     let parsed = null;
-    let error = null;
     const jsonMatch = messageContent.match(/\{[\s\S]*\}/);
     if (jsonMatch) {
       try {
         parsed = JSON5.parse(jsonMatch[0]);
       } catch (err) {
-        // error is not used, so just ignore
+        // ignore
       }
     }
     // If not a valid object, try to extract an array
@@ -173,7 +172,7 @@ export async function generateContractTemplate(contractType: string): Promise<{ 
           const flags = JSON5.parse(arrayMatch[0]);
           parsed = { template: '', flags };
         } catch (err) {
-          error = err;
+          // ignore
         }
       }
     }
@@ -186,7 +185,7 @@ export async function generateContractTemplate(contractType: string): Promise<{ 
           const flags = allObjects.map((obj: any) => JSON5.parse(obj));
           parsed = { template: '', flags };
         } catch (err) {
-          error = err;
+          // ignore
         }
       }
     }

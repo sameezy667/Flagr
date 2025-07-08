@@ -428,8 +428,8 @@ const AnalysisResultsView: React.FC<AnalysisResultsViewProps> = ({ results, full
                     <h2 className="text-2xl font-bold mb-2 text-white">Analytics & Insights</h2>
                     <div className="mb-2 text-white text-base">
                         <div><strong>Documents Analyzed:</strong> {historyList.length}</div>
-                        <div><strong>Total Flags Found:</strong> {historyList.reduce((sum: number, h: any) => sum + (h.results.flags?.length || 0), 0)}</div>
-                        <div><strong>Average Risk Score:</strong> {historyList.length ? (historyList.reduce((a: number, b: any) => a + (b.results.riskAssessment?.risks?.reduce((sum: number, r: any) => sum + r.score, 0) || 0), 0) / historyList.length).toFixed(2) : 'N/A'}</div>
+                        <div><strong>Total Flags Found:</strong> {historyList.reduce((sum: number, item: any) => sum + (item.results.flags?.length || 0), 0)}</div>
+                        <div><strong>Average Risk Score:</strong> {historyList.length ? (historyList.reduce((a: number, item: any) => a + (item.results.riskAssessment?.risks?.reduce((sum: number, r: any) => sum + r.score, 0) || 0), 0) / historyList.length).toFixed(2) : 'N/A'}</div>
                     </div>
                     <div className="mb-2">
                         <div className="font-semibold text-white mb-1 text-base">Risk Score Trend (last 10 docs)</div>
@@ -437,12 +437,12 @@ const AnalysisResultsView: React.FC<AnalysisResultsViewProps> = ({ results, full
                             {[...Array(5)].map((_, i) => (
                                 <line key={i} x1={24} x2={200} y1={12 + i*16} y2={12 + i*16} stroke="#444" strokeDasharray="2 2" />
                             ))}
-                            {historyList.slice(0, 10).map((h: any, i: number) => (
+                            {historyList.slice(0, 10).map((item: any, i: number) => (
                                 <text key={i} x={24 + i*20} y={77} fontSize="12" fill="#aaa" textAnchor="middle">{i+1}</text>
                             ))}
-                            {historyList.slice(0, 10).map((h: any, i: number) => {
-                                const avg = h.results.riskAssessment?.risks?.length
-                                    ? h.results.riskAssessment.risks.reduce((a: number, b: any) => a + b.score, 0) / h.results.riskAssessment.risks.length
+                            {historyList.slice(0, 10).map((item: any, i: number) => {
+                                const avg = item.results.riskAssessment?.risks?.length
+                                    ? item.results.riskAssessment.risks.reduce((a: number, b: any) => a + b.score, 0) / item.results.riskAssessment.risks.length
                                     : 0;
                                 return (
                                     <rect key={i} x={24 + i*20 - 7} y={12 + (64 - avg*6.4)} width={14} height={avg*6.4} fill="#1DB954" rx={2} />
@@ -473,14 +473,14 @@ const AnalysisResultsView: React.FC<AnalysisResultsViewProps> = ({ results, full
                 <div className="flex-1 min-h-0 overflow-y-auto">
                     <h2 className="text-2xl font-bold mb-2 text-white">Analysis History</h2>
                     {historyList.length === 0 && <div className="px-2 py-1 text-gray-400 text-base">No history yet.</div>}
-                    {historyList.map(entry => (
+                    {historyList.map(item => (
                         <button
-                            key={entry.id}
-                            onClick={() => handleLoadHistory(entry)}
+                            key={item.id}
+                            onClick={() => handleLoadHistory(item)}
                             className="w-full text-left px-2 py-1 border-b border-neutral-800 hover:bg-spotify/10 transition text-base"
                         >
-                            <div className="font-bold text-white truncate">{entry.title}</div>
-                            <div className="text-xs text-gray-400">{new Date(entry.date).toLocaleString()}</div>
+                            <div className="font-bold text-white truncate">{item.title}</div>
+                            <div className="text-xs text-gray-400">{new Date(item.date).toLocaleString()}</div>
                         </button>
                     ))}
                 </div>
