@@ -125,7 +125,7 @@ const InitialView: React.FC<InitialViewProps> = ({ onUploadClick, onRiskQuizClic
             style={{ paddingTop: '88px' }}
         >
             {/* Top-right action buttons container */}
-            <div className="flex gap-2 justify-end items-center mt-6 mr-6">
+            <div className="flex gap-2 justify-end items-center mr-6">
               <button
                 className="px-5 py-2.5 rounded-full font-bold text-spotify border-2 border-spotify bg-black shadow-lg transition-all duration-200 hover:bg-spotify hover:text-black hover:scale-105 focus:outline-none focus:ring-2 focus:ring-spotify text-base"
                 onClick={onRiskQuizClick}
