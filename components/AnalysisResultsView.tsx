@@ -437,7 +437,7 @@ const AnalysisResultsView: React.FC<AnalysisResultsViewProps> = ({ results, full
                             {[...Array(5)].map((_, i) => (
                                 <line key={i} x1={24} x2={200} y1={12 + i*16} y2={12 + i*16} stroke="#444" strokeDasharray="2 2" />
                             ))}
-                            {historyList.slice(0, 10).map((item: any, i: number) => (
+                            {historyList.slice(0, 10).map((_: any, i: number) => (
                                 <text key={i} x={24 + i*20} y={77} fontSize="12" fill="#aaa" textAnchor="middle">{i+1}</text>
                             ))}
                             {historyList.slice(0, 10).map((item: any, i: number) => {
