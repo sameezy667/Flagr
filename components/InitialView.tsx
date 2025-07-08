@@ -124,6 +124,10 @@ const InitialView: React.FC<InitialViewProps> = ({ onUploadClick, onRiskQuizClic
             className="pt-[88px] sm:pt-[88px] md:pt-[40px]"
             style={{ paddingTop: '88px' }}
         >
+            {/* DEBUG BANNER: REMOVE IN PRODUCTION */}
+            <div style={{position:'fixed',top:0,left:0,width:'100%',background:'red',color:'white',zIndex:100000,textAlign:'center',fontWeight:'bold',padding:'4px 0'}}>
+              DEPLOYED DEBUG BANNER - THIS IS THE LATEST CODE
+            </div>
             {/* Top-right action buttons container */}
             <div style={{
               position: 'fixed',
