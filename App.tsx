@@ -694,6 +694,25 @@ const App: React.FC = () => {
         );
     };
 
+    // Helper: always provide a valid ChatSession to ChatPanel
+    const getActiveOrDefaultSession = () => {
+        if (activeSession) return activeSession;
+        return {
+            id: 'default',
+            title: 'New Chat',
+            messages: [
+                {
+                    id: 'default-msg',
+                    role: MessageRole.ASSISTANT,
+                    content: "Hello! I'm your Flagr AI Assistant. Upload a document or ask me a question to get started.",
+                    timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                }
+            ],
+            createdAt: new Date().toISOString(),
+            analysis: null,
+        };
+    };
+
     if (isLoadingAuth) {
         return (
             <div className="fixed top-0 left-0 w-full h-full bg-transparent flex items-center justify-center">
@@ -898,16 +917,14 @@ const App: React.FC = () => {
                             </div>
                             {/* Right Panel: Chat */}
                             <div className="flex flex-col bg-neutral-900">
-                                {activeSession && (
-                                    <ChatPanel 
-                                        session={activeSession}
-                                        isProcessing={isProcessing}
-                                        onSendMessage={handleSendMessage}
-                                        onUploadClick={triggerFileUpload}
-                                        onToggleSidebar={handleToggleSidebar}
-                                        isMobile={false}
-                                    />
-                                )}
+                                <ChatPanel 
+                                    session={getActiveOrDefaultSession()}
+                                    isProcessing={isProcessing}
+                                    onSendMessage={handleSendMessage}
+                                    onUploadClick={triggerFileUpload}
+                                    onToggleSidebar={handleToggleSidebar}
+                                    isMobile={false}
+                                />
                             </div>
                         </div>
                     </main>

@@ -126,27 +126,22 @@ const InitialView: React.FC<InitialViewProps> = ({ onUploadClick, onRiskQuizClic
         >
             {/* Top-right action buttons container */}
             <div style={{ position: 'fixed', top: 24, right: 32, zIndex: 99999, display: 'flex', gap: '16px' }}>
-                {onRiskQuizClick && (
-                    <button
-                        onClick={onRiskQuizClick}
-                        className="px-5 py-2.5 rounded-full font-bold text-spotify border-2 border-spotify bg-black shadow-lg transition-all duration-200 hover:bg-spotify hover:text-black hover:scale-105 focus:outline-none focus:ring-2 focus:ring-spotify text-base"
-                        style={{ boxShadow: '0 2px 16px rgba(29,185,84,0.15)' }}
-                    >
-                        <span role="img" aria-label="Quiz">📝</span> Take the Risk Quiz
-                    </button>
-                )}
-                {onGenerateTemplate && (
-                    <button
-                        onClick={() => {
-                            console.log('Top Right Generate Template button clicked');
-                            onGenerateTemplate();
-                        }}
-                        className="px-5 py-2.5 rounded-full font-bold text-spotify border-2 border-spotify bg-black shadow-lg transition-all duration-200 hover:bg-spotify hover:text-black hover:scale-105 focus:outline-none focus:ring-2 focus:ring-spotify text-base"
-                        style={{ boxShadow: '0 2px 16px rgba(29,185,84,0.15)' }}
-                    >
-                        Generate Template
-                    </button>
-                )}
+                <button
+                    onClick={onRiskQuizClick}
+                    className="px-5 py-2.5 rounded-full font-bold text-spotify border-2 border-spotify bg-black shadow-lg transition-all duration-200 hover:bg-spotify hover:text-black hover:scale-105 focus:outline-none focus:ring-2 focus:ring-spotify text-base"
+                    style={{ boxShadow: '0 2px 16px rgba(29,185,84,0.15)' }}
+                >
+                    <span role="img" aria-label="Quiz">📝</span> Take the Risk Quiz
+                </button>
+                <button
+                    onClick={() => {
+                        if (onGenerateTemplate) onGenerateTemplate();
+                    }}
+                    className="px-5 py-2.5 rounded-full font-bold text-spotify border-2 border-spotify bg-black shadow-lg transition-all duration-200 hover:bg-spotify hover:text-black hover:scale-105 focus:outline-none focus:ring-2 focus:ring-spotify text-base"
+                    style={{ boxShadow: '0 2px 16px rgba(29,185,84,0.15)' }}
+                >
+                    Generate Template
+                </button>
             </div>
             {/* Remove old Take the Risk Quiz button from below the title */}
             <div className="mb-6 sm:mb-8 animate-fadeInSlideUp">
