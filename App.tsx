@@ -891,8 +891,8 @@ const App: React.FC = () => {
                     <main className="flex-1 flex flex-col overflow-hidden bg-neutral-900 transition-all duration-300">
                         <div className="flex-1 grid grid-cols-1 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] xl:grid-cols-[minmax(0,3fr)_minmax(0,1fr)] gap-px bg-neutral-800/50 overflow-hidden">
                             {/* Left Panel: Main Content */}
-                            <div className="flex flex-col overflow-y-auto bg-neutral-900">
-                                <div className="flex-1 p-4 sm:p-6 lg:p-8 animate-fadeIn">
+                            <div className="flex flex-col items-start overflow-y-auto bg-neutral-900">
+                                <div className="w-full p-4 sm:p-6 lg:p-8 animate-fadeIn">
                                     {renderMainPanelContent()}
                                 </div>
                             </div>
