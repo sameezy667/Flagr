@@ -76,11 +76,9 @@ const ActionCard: React.FC<ActionCardProps> = ({ icon, title, description, onCli
 
 interface InitialViewProps {
     onUploadClick: () => void;
-    onRiskQuizClick?: () => void;
-    onGenerateTemplate?: () => void;
 }
 
-const InitialView: React.FC<InitialViewProps> = ({ onUploadClick, onRiskQuizClick, onGenerateTemplate }) => {
+const InitialView: React.FC<InitialViewProps> = ({ onUploadClick }) => {
     const cardData = [
         {
             icon: <UploadIcon className="w-5 h-5 sm:w-6 sm:h-6 text-spotify" />,
