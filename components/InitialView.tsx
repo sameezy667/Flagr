@@ -163,10 +163,7 @@ const InitialView: React.FC<InitialViewProps> = ({ onUploadClick, onRiskQuizClic
                     ))}
                 </div>
             </div>
-            {/* Chat panel container at the bottom */}
-            <div className="w-full border-t border-neutral-800 bg-neutral-900 mt-8 p-4 rounded-b-xl shadow-lg">
-                {/* Chat panel will be rendered here by parent layout */}
-            </div>
+            {/* Remove chat panel container at the bottom */}
         </div>
     );
 };
