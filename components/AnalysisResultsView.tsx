@@ -225,7 +225,7 @@ const AnalysisResultsView: React.FC<AnalysisResultsViewProps> = ({ results, full
         }
     }, [results, fullText, detectedType]);
 
-    const handleLoadHistory = (entry: any) => {
+    const handleLoadHistory = () => {
         window.location.reload(); // For now, reload to trigger analysis view (can be improved to set state)
         // In a more advanced app, you would set the analysis state directly
     };
@@ -423,7 +423,7 @@ const AnalysisResultsView: React.FC<AnalysisResultsViewProps> = ({ results, full
     // Analytics modal content
     const renderAnalyticsModal = (onClose: () => void) => (
         <div className="fixed inset-0 z-[11000] flex items-center justify-center p-2 sm:p-4 bg-black/70 backdrop-blur animate-fadeIn" onClick={onClose}>
-            <div className="bg-neutral-900 p-6 rounded-xl shadow-2xl max-w-lg w-full flex flex-col" style={{ maxHeight: '360px' }} onClick={e => e.stopPropagation()}>
+            <div className="bg-neutral-900 p-6 rounded-xl shadow-2xl max-w-lg w-full flex flex-col" style={{ maxHeight: '360px' }} onClick={() => {}}>
                 <div className="flex-1 min-h-0 overflow-y-auto">
                     <h2 className="text-2xl font-bold mb-2 text-white">Analytics & Insights</h2>
                     <div className="mb-2 text-white text-base">
@@ -469,14 +469,14 @@ const AnalysisResultsView: React.FC<AnalysisResultsViewProps> = ({ results, full
     // History modal content
     const renderHistoryModal = (onClose: () => void) => (
         <div className="fixed inset-0 z-[11000] flex items-center justify-center p-2 sm:p-4 bg-black/70 backdrop-blur animate-fadeIn" onClick={onClose}>
-            <div className="bg-neutral-900 p-6 rounded-xl shadow-2xl max-w-lg w-full flex flex-col" style={{ maxHeight: '360px' }} onClick={e => e.stopPropagation()}>
+            <div className="bg-neutral-900 p-6 rounded-xl shadow-2xl max-w-lg w-full flex flex-col" style={{ maxHeight: '360px' }} onClick={() => {}}>
                 <div className="flex-1 min-h-0 overflow-y-auto">
                     <h2 className="text-2xl font-bold mb-2 text-white">Analysis History</h2>
                     {historyList.length === 0 && <div className="px-2 py-1 text-gray-400 text-base">No history yet.</div>}
                     {historyList.map(item => (
                         <button
                             key={item.id}
-                            onClick={() => handleLoadHistory(item)}
+                            onClick={() => handleLoadHistory()}
                             className="w-full text-left px-2 py-1 border-b border-neutral-800 hover:bg-spotify/10 transition text-base"
                         >
                             <div className="font-bold text-white truncate">{item.title}</div>
