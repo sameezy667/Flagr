@@ -27,8 +27,9 @@ const ChatView: React.FC<ChatViewProps> = ({ session, isProcessing }) => {
 
     return (
         <div className="space-y-4 sm:space-y-6">
-            {history.map((msg) => (
-                <ChatMessage key={msg.id} message={msg} />
+            {history.map((msg, idx) => (
+                <ChatMessage key={msg.id} message={msg} 
+                    className={idx === history.length - 1 ? 'mb-12' : ''} />
             ))}
             {isProcessing && history.length > 0 && history[history.length - 1]?.role === MessageRole.USER && (
                 <ChatMessage 

@@ -1,6 +1,7 @@
 // src/services/llama-api.services.ts
 
 import { Message, MessageRole, AIAnalysisData } from '../types';
+import JSON5 from 'json5';
 
 // --- CONFIGURATION ---
 const API_BASE_URL = 'https://api.groq.com/openai/v1';
@@ -92,6 +93,129 @@ export async function generateDocumentAnalysis(
     throw new Error(
       'Failed to get a valid analysis from the AI. The AI response may have been incomplete or improperly formatted.'
     );
+  }
+}
+
+/**
+ * Creates the system prompt for contract template generation.
+ */
+function getTemplateGenerationPrompt(contractType: string): string {
+  return `You are an expert AI legal assistant. Generate a safe, compliant ${contractType} contract template.
+
+Respond ONLY with a valid JSON object with two keys:
+- template: the full contract template as plain text
+- flags: an array of risk flags, each with { id, title, clause, explanation, severity, suggestedRewrite }
+Do NOT include any other text, explanation, or formatting. Only output the JSON object.`;
+}
+
+/**
+ * Generates a contract template and risk flags using the AI API.
+ */
+export async function generateContractTemplate(contractType: string): Promise<{ template: string; flags: any[] }> {
+  if (!API_KEY) {
+    throw new Error("Missing API Key. Please add VITE_GROQ_API_KEY to your .env.local file.");
+  }
+
+  const systemPrompt = getTemplateGenerationPrompt(contractType);
+  const userPrompt = `Generate a ${contractType} template.`;
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/chat/completions`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${API_KEY}`,
+      },
+      body: JSON.stringify({
+        model: MODEL_NAME,
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt },
+        ],
+        temperature: 0.2,
+        max_tokens: 4096,
+        // response_format: { type: "json_object" }, // Removed strict JSON mode
+      }),
+    });
+
+    if (!response.ok) {
+      let errorMessage = `API returned an error: ${response.statusText}`;
+      try {
+        const errorData = await response.json();
+        if (errorData.error?.message) errorMessage = errorData.error.message;
+        if (errorData.failed_generation) errorMessage += `\nDetails: ${errorData.failed_generation}`;
+      } catch {}
+      throw new Error(errorMessage);
+    }
+
+    const responseData = await response.json();
+    const messageContent = responseData.choices[0]?.message?.content;
+    if (!messageContent) {
+      throw new Error("API response did not contain a valid message.");
+    }
+    console.log('Raw AI contract template output:', messageContent);
+    // Try to extract a valid JSON object
+    let parsed = null;
+    let error = null;
+    const jsonMatch = messageContent.match(/\{[\s\S]*\}/);
+    if (jsonMatch) {
+      try {
+        parsed = JSON5.parse(jsonMatch[0]);
+      } catch (err) {
+        error = err;
+      }
+    }
+    // If not a valid object, try to extract an array
+    if (!parsed) {
+      const arrayMatch = messageContent.match(/\[([\s\S]*)\]/);
+      if (arrayMatch) {
+        try {
+          const flags = JSON5.parse(arrayMatch[0]);
+          parsed = { template: '', flags };
+        } catch (err) {
+          error = err;
+        }
+      }
+    }
+    // If still not parsed, try to reconstruct from fragments
+    if (!parsed) {
+      // Try to find all objects and wrap in an array
+      const allObjects = messageContent.match(/\{[^}]+\}/g);
+      if (allObjects && allObjects.length > 1) {
+        try {
+          const flags = allObjects.map(obj => JSON5.parse(obj));
+          parsed = { template: '', flags };
+        } catch (err) {
+          error = err;
+        }
+      }
+    }
+    if (!parsed) {
+      // Last resort: try to extract "template" and "flags" manually
+      const templateMatch = messageContent.match(/"template"\s*:\s*"([\s\S]*?)",\s*"flags"/);
+      const flagsMatch = messageContent.match(/"flags"\s*:\s*(\[.*\])\s*\}/s);
+      if (templateMatch && flagsMatch) {
+        try {
+          const template = templateMatch[1];
+          const flags = JSON5.parse(flagsMatch[1]);
+          parsed = { template, flags };
+        } catch (err) {
+          throw new Error('Failed to parse AI JSON output. Raw output:\n' + messageContent);
+        }
+      } else {
+        throw new Error('Failed to parse AI JSON output. Raw output:\n' + messageContent);
+      }
+    }
+    if (!parsed.template || typeof parsed.template !== 'string') {
+      parsed.template = '';
+    }
+    if (!parsed.flags || !Array.isArray(parsed.flags)) {
+      parsed.flags = [];
+    }
+    return parsed;
+  } catch (error) {
+    console.error('Error during contract template generation:', error);
+    throw new Error(error instanceof Error ? error.message : 'Failed to generate contract template.');
   }
 }
 

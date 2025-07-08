@@ -9,12 +9,17 @@ import LoginPage from './components/LoginPage';
 import RiskQuiz from './components/RiskQuiz';
 import { Message, MessageRole, ChatSession, User, AnalysisResult } from './types';
 import { v4 as uuidv4 } from 'uuid';
-import { generateTitleFromMessage, streamChatResponse, generateDocumentAnalysis } from './services/llama-api.services';
+import { generateTitleFromMessage, streamChatResponse, generateDocumentAnalysis, generateContractTemplate } from './services/llama-api.services';
 import { storageService } from './services/storageService';
 import { firebaseService } from './services/firebaseService';
 import { extractTextFromFile, cleanText, detectDocumentType, getTextStats } from './services/documentParser';
 import { CheckIcon, FlagrLogo } from './constants';
 import { useDarkMode } from 'usehooks-ts';
+import Tesseract from 'tesseract.js';
+import * as pdfjsLib from 'pdfjs-dist';
+import SignaturePad from './components/SignaturePad';
+
+(pdfjsLib as any).GlobalWorkerOptions.workerSrc = '/pdf.worker.js';
 
 const useMediaQuery = (query: string) => {
     const [matches, setMatches] = useState(false);
@@ -84,6 +89,140 @@ const App: React.FC = () => {
     const isMobile = useMediaQuery('(max-width: 768px)');
     const { isDarkMode, toggle } = useDarkMode();
     const [showRiskQuiz, setShowRiskQuiz] = useState(false);
+    const [ocrProcessing, setOcrProcessing] = useState(false);
+    const [fullText, setFullText] = useState<string>('');
+    const [showTemplateModal, setShowTemplateModal] = useState(false);
+    const [templateType, setTemplateType] = useState('Freelance Contract');
+    const [isGeneratingTemplate, setIsGeneratingTemplate] = useState(false);
+    const [generatedTemplate, setGeneratedTemplate] = useState<string | null>(null);
+    const [templateFlags, setTemplateFlags] = useState<any[] | null>(null);
+    const [templateError, setTemplateError] = useState<string | null>(null);
+    const [showSignaturePad, setShowSignaturePad] = useState(false);
+    const [signatureDataUrl, setSignatureDataUrl] = useState<string | null>(null);
+    const [analyticsOpen, setAnalyticsOpen] = useState(false);
+    const [historyOpen, setHistoryOpen] = useState(false);
+
+    const contractTypes = [
+        'Freelance Contract',
+        'Non-Disclosure Agreement (NDA)',
+        'Employment Agreement',
+        'Consulting Agreement',
+        'Lease Agreement',
+        'Service Agreement',
+        'Partnership Agreement',
+        'Sales Agreement',
+    ];
+
+    const handleGenerateTemplate = async () => {
+        setIsGeneratingTemplate(true);
+        setGeneratedTemplate(null);
+        setTemplateFlags(null);
+        setTemplateError(null);
+        try {
+            const result = await generateContractTemplate(templateType);
+            console.log('Raw AI template result:', result); // Debug log
+            // Strict validation: template must be a string, not repeated, not empty
+            if (typeof result.template !== 'string' || !result.template.trim() || /\b(\w+) \1\b/.test(result.template)) {
+                throw new Error('AI did not return a valid template. Please try again.');
+            }
+            setGeneratedTemplate(result.template.trim());
+            setTemplateFlags(result.flags);
+        } catch (err: any) {
+            setTemplateError(err.message || 'Failed to generate template.');
+            setGeneratedTemplate(null);
+            setTemplateFlags(null);
+        } finally {
+            setIsGeneratingTemplate(false);
+        }
+    };
+
+    const handleDownloadTemplate = () => {
+        if (!generatedTemplate) return;
+        const blob = new Blob([generatedTemplate], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${templateType.replace(/\s+/g, '_')}_template.txt`;
+        a.click();
+        URL.revokeObjectURL(url);
+    };
+
+    const handleSaveSignature = (dataUrl: string) => {
+        setSignatureDataUrl(dataUrl);
+        setShowSignaturePad(false);
+    };
+    const handleDownloadSignature = () => {
+        if (!signatureDataUrl) return;
+        const a = document.createElement('a');
+        a.href = signatureDataUrl;
+        a.download = 'signature.png';
+        a.click();
+    };
+
+    const handleDownloadSignedDocument = async () => {
+        if (!generatedTemplate || !signatureDataUrl) return;
+        // Create an off-screen canvas
+        const canvas = document.createElement('canvas');
+        const width = 800;
+        const lineHeight = 28;
+        const padding = 32;
+        // Word wrap logic
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return;
+        ctx.font = '18px monospace';
+        const maxTextWidth = width - 2 * padding;
+        const templateLines = generatedTemplate.split('\n');
+        // Word wrap each line
+        const wrappedLines: string[] = [];
+        templateLines.forEach(line => {
+            if (ctx.measureText(line).width <= maxTextWidth) {
+                wrappedLines.push(line);
+            } else {
+                let words = line.split(' ');
+                let current = '';
+                for (let word of words) {
+                    const test = current ? current + ' ' + word : word;
+                    if (ctx.measureText(test).width > maxTextWidth) {
+                        if (current) wrappedLines.push(current);
+                        current = word;
+                    } else {
+                        current = test;
+                    }
+                }
+                if (current) wrappedLines.push(current);
+            }
+        });
+        // Estimate height: lines of template + signature
+        const height = padding * 2 + wrappedLines.length * lineHeight + 200;
+        canvas.width = width;
+        canvas.height = height;
+        // Background
+        ctx.fillStyle = '#18181b';
+        ctx.fillRect(0, 0, width, height);
+        // Draw wrapped template text centered
+        ctx.font = '18px monospace';
+        ctx.fillStyle = '#fff';
+        wrappedLines.forEach((line, i) => {
+            const textWidth = ctx.measureText(line).width;
+            const x = (width - textWidth) / 2;
+            ctx.fillText(line, x, padding + (i + 1) * lineHeight);
+        });
+        // Draw signature image
+        const img = new window.Image();
+        img.onload = () => {
+            // Place signature at bottom right
+            const sigWidth = 240;
+            const sigHeight = 90;
+            ctx.drawImage(img, width - sigWidth - padding, height - sigHeight - padding, sigWidth, sigHeight);
+            // Download
+            const url = canvas.toDataURL('image/png');
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${templateType.replace(/\s+/g, '_')}_signed.png`;
+            a.click();
+        };
+        img.src = signatureDataUrl;
+    };
 
     // Debug logging
     useEffect(() => {
@@ -259,7 +398,71 @@ const App: React.FC = () => {
     const handleFileUpload = useCallback(async (file: File) => {
         if (!file) return;
         try {
-            const text = await extractTextFromFile(file);
+            let text = '';
+            if (file.type.startsWith('image/')) {
+                setOcrProcessing(true);
+                setToastMessage('Extracting text from image...');
+                // Convert image to grayscale using a canvas
+                const img = document.createElement('img');
+                img.src = URL.createObjectURL(file);
+                await new Promise(resolve => { img.onload = resolve; });
+                const canvas = document.createElement('canvas');
+                canvas.width = img.width;
+                canvas.height = img.height;
+                const ctx = canvas.getContext('2d');
+                if (!ctx) throw new Error('Could not get canvas context');
+                ctx.drawImage(img, 0, 0);
+                // Convert to grayscale
+                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                for (let i = 0; i < imageData.data.length; i += 4) {
+                    const avg = (imageData.data[i] + imageData.data[i+1] + imageData.data[i+2]) / 3;
+                    imageData.data[i] = avg;
+                    imageData.data[i+1] = avg;
+                    imageData.data[i+2] = avg;
+                }
+                ctx.putImageData(imageData, 0, 0);
+                const grayscaleBlob = await new Promise<Blob>((resolve, reject) => {
+                    canvas.toBlob(blob => {
+                        if (blob) resolve(blob);
+                        else reject(new Error('Failed to create grayscale blob'));
+                    }, file.type);
+                });
+                // Run Tesseract with logger and better config
+                const { data: { text: ocrText } } = await Tesseract.recognize(grayscaleBlob, 'eng', {
+                    logger: (m: any) => {
+                        if (m.status === 'recognizing text') {
+                            setToastMessage(`OCR Progress: ${Math.round(m.progress * 100)}%`);
+                        }
+                    },
+                    config: { tessedit_pageseg_mode: 6 }
+                } as any);
+                text = ocrText;
+                setOcrProcessing(false);
+                setToastMessage(null);
+            } else if (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) {
+                setOcrProcessing(true);
+                setToastMessage('Extracting text from PDF...');
+                const reader = new FileReader();
+                const arrayBuffer = await new Promise<ArrayBuffer>((resolve, reject) => {
+                    reader.onload = () => resolve(reader.result as ArrayBuffer);
+                    reader.onerror = reject;
+                    reader.readAsArrayBuffer(file);
+                });
+                const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+                let pdfText = '';
+                for (let i = 1; i <= pdf.numPages; i++) {
+                    const page = await pdf.getPage(i);
+                    const content = await page.getTextContent();
+                    const pageText = content.items.map(item => ('str' in item ? item.str : '')).join(' ');
+                    pdfText += pageText + '\n';
+                }
+                text = pdfText;
+                setOcrProcessing(false);
+                setToastMessage(null);
+            } else {
+                text = await extractTextFromFile(file);
+            }
+            setFullText(text); // Store the original text for highlighting
             const cleanedText = cleanText(text);
             if (cleanedText.trim().length > 0) {
                 await runDocumentAnalysis(file, cleanedText);
@@ -267,6 +470,8 @@ const App: React.FC = () => {
                  alert(`File '${file.name}' is empty or could not be read.`);
             }
         } catch(error) {
+            setOcrProcessing(false);
+            setToastMessage(null);
             alert(`Error processing file '${file.name}': ${error instanceof Error ? error.message : 'An unknown error occurred'}`);
             console.error(error);
         }
@@ -301,8 +506,9 @@ const App: React.FC = () => {
         setIsDragging(false);
         dragCounter.current = 0;
         if (e.dataTransfer?.files && e.dataTransfer.files.length > 0) {
-            await handleFileUpload(e.dataTransfer.files[0]);
-            e.dataTransfer.clearData();
+            for (const file of Array.from(e.dataTransfer.files)) {
+                await handleFileUpload(file);
+            }
         }
     }, [handleFileUpload]);
 
@@ -458,9 +664,11 @@ const App: React.FC = () => {
     };
 
     const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
-        const file = event.target.files?.[0];
-        if (file) {
-            await handleFileUpload(file);
+        const files = event.target.files;
+        if (files && files.length > 0) {
+            for (const file of Array.from(files)) {
+                await handleFileUpload(file);
+            }
             event.target.value = '';
         }
     };
@@ -470,24 +678,28 @@ const App: React.FC = () => {
             return <AnalysisLoadingView />;
         }
         if (activeSession?.analysis) {
-            return <AnalysisResultsView results={activeSession.analysis} />;
-        }
-        if (!activeSessionId) {
             return (
-                <>
-                    <InitialView
-                        onUploadClick={triggerFileUpload}
-                        onRiskQuizClick={() => setShowRiskQuiz(true)}
-                    />
-                    {showRiskQuiz && (
-                        <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/70 backdrop-blur animate-fadeIn">
-                            <RiskQuiz onClose={() => setShowRiskQuiz(false)} />
-                        </div>
-                    )}
-                </>
+                <AnalysisResultsView
+                    results={activeSession.analysis}
+                    fullText={fullText}
+                    analyticsOpen={analyticsOpen}
+                    onCloseAnalytics={() => setAnalyticsOpen(false)}
+                    historyOpen={historyOpen}
+                    onCloseHistory={() => setHistoryOpen(false)}
+                />
             );
         }
-        return <InitialView onUploadClick={triggerFileUpload} />;
+        // Always pass onGenerateTemplate to InitialView
+        return (
+            <InitialView
+                onUploadClick={triggerFileUpload}
+                onRiskQuizClick={() => setShowRiskQuiz(true)}
+                onGenerateTemplate={() => {
+                    console.log('App.tsx: onGenerateTemplate called');
+                    setShowTemplateModal(true);
+                }}
+            />
+        );
     };
 
     if (isLoadingAuth) {
@@ -513,7 +725,19 @@ const App: React.FC = () => {
     }
 
     return (
-        <div className={`flex h-screen w-screen text-gray-300 bg-transparent font-sans ${!isMobile ? 'overflow-hidden' : ''}`}>
+        <div
+            className={`flex h-screen w-screen text-gray-300 bg-transparent font-sans ${!isMobile ? 'overflow-hidden' : ''}`}
+            onDragOver={e => { e.preventDefault(); setIsDragging(true); }}
+            onDragLeave={e => { e.preventDefault(); setIsDragging(false); }}
+            onDrop={async e => {
+                e.preventDefault(); setIsDragging(false);
+                if (e.dataTransfer?.files && e.dataTransfer.files.length > 0) {
+                    for (const file of Array.from(e.dataTransfer.files)) {
+                        await handleFileUpload(file);
+                    }
+                }
+            }}
+        >
             {toastMessage && <Toast message={toastMessage} onDismiss={() => setToastMessage(null)} />}
             {isDragging && <DropzoneOverlay />}
              <input
@@ -521,8 +745,96 @@ const App: React.FC = () => {
                 ref={fileInputRef}
                 onChange={handleFileChange}
                 className="hidden"
-                accept=".txt,.md,.rtf,.html,.xml,.pdf,.docx"
+                accept=".txt,.md,.rtf,.html,.xml,.pdf,.docx,.jpeg,.jpg,.png,.pdf"
+                multiple
             />
+            {showRiskQuiz && (
+                <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/70 backdrop-blur animate-fadeIn">
+                    <RiskQuiz onClose={() => setShowRiskQuiz(false)} />
+                </div>
+            )}
+            {showTemplateModal && (
+                <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/70 backdrop-blur animate-fadeIn">
+                    <div className="bg-neutral-900 p-8 rounded-xl shadow-2xl max-w-lg w-full overflow-y-auto" style={{ maxHeight: '90vh' }}>
+                        <h2 className="text-2xl font-bold mb-4 text-white">Generate Contract Template</h2>
+                        <p className="text-gray-300 mb-6">Select a contract type to generate a safe, compliant template with AI.</p>
+                        <select
+                            className="w-full mb-4 p-2 rounded bg-neutral-800 text-white border border-neutral-700 focus:outline-none"
+                            value={templateType}
+                            onChange={e => setTemplateType(e.target.value)}
+                        >
+                            {contractTypes.map(type => (
+                                <option key={type} value={type}>{type}</option>
+                            ))}
+                        </select>
+                        <button
+                            className="w-full px-5 py-2 bg-spotify text-white rounded-lg font-semibold shadow hover:bg-spotify/80 transition mb-4"
+                            onClick={handleGenerateTemplate}
+                            disabled={false}
+                        >
+                            {isGeneratingTemplate ? 'Generating...' : 'Generate Template'}
+                        </button>
+                        {templateError && (
+                            <div className="text-red-400 mb-2 font-bold">{templateError}</div>
+                        )}
+                        {generatedTemplate && (
+                            <div className="mt-4">
+                                <pre className="bg-neutral-800 text-white p-4 rounded mb-2 whitespace-pre-wrap max-h-60 overflow-y-auto">{generatedTemplate}</pre>
+                                <button
+                                    className="px-4 py-2 bg-spotify text-white rounded font-semibold hover:bg-spotify/80 transition mb-2"
+                                    onClick={handleDownloadTemplate}
+                                >
+                                    Download as .txt
+                                </button>
+                                <button
+                                    className="px-4 py-2 bg-neutral-700 text-white rounded font-semibold hover:bg-neutral-600 transition mb-2 ml-2"
+                                    onClick={() => setShowSignaturePad(true)}
+                                >
+                                    Sign Document
+                                </button>
+                                {signatureDataUrl && (
+                                    <div className="mt-2 flex flex-col items-center">
+                                        <img src={signatureDataUrl} alt="Signature" className="border border-spotify rounded bg-white mb-2 max-w-xs" />
+                                        <button
+                                            className="px-3 py-1 bg-spotify text-white rounded font-semibold hover:bg-spotify/80 transition mb-2"
+                                            onClick={handleDownloadSignature}
+                                        >
+                                            Download Signature
+                                        </button>
+                                        <button
+                                            className="px-3 py-1 bg-spotify text-white rounded font-semibold hover:bg-spotify/80 transition"
+                                            onClick={handleDownloadSignedDocument}
+                                        >
+                                            Download Signed Document
+                                        </button>
+                                    </div>
+                                )}
+                                {templateFlags && templateFlags.length > 0 && (
+                                    <div className="mt-4">
+                                        <h3 className="text-lg font-bold text-white mb-2">Risk Flags</h3>
+                                        <ul className="space-y-2">
+                                            {templateFlags.map(flag => (
+                                                <li key={flag.id} className="bg-neutral-800 p-3 rounded text-white border-l-4 border-spotify">
+                                                    <div className="font-semibold">{flag.title} <span className="text-xs text-spotify ml-2">{flag.severity}</span></div>
+                                                    <div className="text-sm text-neutral-300 mt-1"><strong>Clause:</strong> {flag.clause}</div>
+                                                    <div className="text-sm text-neutral-400 mt-1"><strong>Explanation:</strong> {flag.explanation}</div>
+                                                    {flag.suggestedRewrite && (
+                                                        <div className="text-sm text-green-400 mt-1"><strong>Suggested Rewrite:</strong> {flag.suggestedRewrite}</div>
+                                                    )}
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                        {showSignaturePad && (
+                            <SignaturePad onSave={handleSaveSignature} onClose={() => setShowSignaturePad(false)} />
+                        )}
+                        <button className="mt-6 px-5 py-2 bg-neutral-700 text-white rounded-lg font-semibold shadow hover:bg-neutral-600 transition w-full" onClick={() => setShowTemplateModal(false)}>Close</button>
+                    </div>
+                </div>
+            )}
             {/* Hamburger menu always visible on mobile */}
             {isMobile && !isSidebarExpanded && (
                 <button
@@ -552,6 +864,9 @@ const App: React.FC = () => {
                         isMobile={isMobile}
                         isDarkMode={isDarkMode}
                         toggleDarkMode={toggle}
+                        onRiskQuizClick={() => setShowRiskQuiz(true)}
+                        onShowAnalytics={() => setAnalyticsOpen(true)}
+                        onShowHistory={() => setHistoryOpen(true)}
                     />
                 ) : (
                     activeSession && (
@@ -583,6 +898,9 @@ const App: React.FC = () => {
                         isMobile={isMobile}
                         isDarkMode={isDarkMode}
                         toggleDarkMode={toggle}
+                        onRiskQuizClick={() => setShowRiskQuiz(true)}
+                        onShowAnalytics={() => setAnalyticsOpen(true)}
+                        onShowHistory={() => setHistoryOpen(true)}
                     />
                     <main className="flex-1 flex flex-col overflow-hidden bg-neutral-900 transition-all duration-300">
                         <div className="flex-1 grid grid-cols-1 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] xl:grid-cols-[minmax(0,3fr)_minmax(0,1fr)] gap-px bg-neutral-800/50 overflow-hidden">
@@ -611,7 +929,7 @@ const App: React.FC = () => {
             )}
             {isAnalysisModalOpen && (
                 <AnalysisModal onClose={() => setAnalysisModalOpen(false)}>
-                    {activeSession?.analysis && <AnalysisResultsView results={activeSession.analysis} />}
+                    {activeSession?.analysis && <AnalysisResultsView results={activeSession.analysis} fullText={fullText} />}
                 </AnalysisModal>
             )}
         </div>

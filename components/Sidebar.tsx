@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { ChatSession, User } from '../types';
 import { PlusIcon, PencilIcon, TrashIcon } from '../constants';
 import UserProfile from './UserProfile';
-import { Sun, Moon } from 'lucide-react';
+import { Sun, Moon, BarChart2, Clock } from 'lucide-react';
 
 interface SidebarProps {
     sessions: ChatSession[];
@@ -18,6 +18,9 @@ interface SidebarProps {
     isMobile: boolean;
     isDarkMode: boolean;
     toggleDarkMode: () => void;
+    onRiskQuizClick?: () => void;
+    onShowAnalytics?: () => void;
+    onShowHistory?: () => void;
 }
 
 const SessionItem: React.FC<{
@@ -93,7 +96,7 @@ const SessionItem: React.FC<{
     );
 };
 
-const Sidebar: React.FC<SidebarProps> = ({ sessions, activeSessionId, isExpanded, onNewChat, onSwitchSession, onDeleteSession, onRenameSession, onToggle, user, onLogout, isMobile, isDarkMode, toggleDarkMode }) => {
+const Sidebar: React.FC<SidebarProps> = ({ sessions, activeSessionId, isExpanded, onNewChat, onSwitchSession, onDeleteSession, onRenameSession, onToggle, user, onLogout, isMobile, isDarkMode, toggleDarkMode, onRiskQuizClick, onShowAnalytics, onShowHistory }) => {
     return (
         <>
             {/* Overlay for mobile */}
@@ -145,14 +148,22 @@ const Sidebar: React.FC<SidebarProps> = ({ sessions, activeSessionId, isExpanded
                 </div>
 
                 <footer className="mt-auto pt-2 border-t border-neutral-800">
-                    <button
-                        className="w-full flex items-center justify-center gap-2 p-2 mb-2 rounded-lg bg-neutral-800 hover:bg-neutral-700/80 text-gray-200 transition-all"
-                        onClick={toggleDarkMode}
-                        aria-label="Toggle dark mode"
-                    >
-                        {isDarkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-                        <span>{isDarkMode ? 'Light Mode' : 'Dark Mode'}</span>
-                    </button>
+                    <div className="flex flex-col gap-2 mt-4">
+                        <button
+                            onClick={onShowAnalytics}
+                            className="w-full flex items-center gap-2 px-4 py-2 rounded-full border-2 border-spotify text-spotify font-semibold bg-black hover:bg-spotify hover:text-black transition min-w-0"
+                        >
+                            <BarChart2 className="w-5 h-5" />
+                            {isExpanded && <span className="truncate">Analytics</span>}
+                        </button>
+                        <button
+                            onClick={onShowHistory}
+                            className="w-full flex items-center gap-2 px-4 py-2 rounded-full border-2 border-spotify text-spotify font-semibold bg-black hover:bg-spotify hover:text-black transition min-w-0"
+                        >
+                            <Clock className="w-5 h-5" />
+                            {isExpanded && <span className="truncate">History</span>}
+                        </button>
+                    </div>
                     <UserProfile 
                         user={user}
                         onLogout={onLogout}

@@ -48,7 +48,7 @@ const ChatPanel: React.FC<ChatPanelProps> = ({ session, isProcessing, onSendMess
             </header>
 
             {/* Add vertical spacing between header and chat area on mobile */}
-            <div className={`flex-1 overflow-y-auto min-h-0 scrollbar-custom animate-fadeIn ${isMobile ? 'px-2 pt-2 pb-1' : 'p-3 sm:p-4 md:p-6'}`} style={{ scrollbarGutter: 'stable' }}>
+            <div className={`flex-1 overflow-y-auto min-h-0 scrollbar-custom animate-fadeIn ${isMobile ? 'px-2 pt-2 pb-1' : 'p-3 sm:p-4 md:p-6'} pb-24`} style={{ scrollbarGutter: 'stable' }}>
                 <ChatView
                     key={session.id}
                     session={session}

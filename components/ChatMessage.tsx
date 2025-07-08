@@ -1,14 +1,16 @@
 import React, { useState } from 'react';
 import { Message, MessageRole } from '../types';
-import { FlagrIcon, UserIcon, CopyIcon, CheckIcon } from '../constants';
+import { FlagrIcon, UserIcon, CopyIcon, CheckIcon, SpeakerIcon } from '../constants';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import { speakText, stopSpeaking } from '../services/speechService';
 
 interface ChatMessageProps {
     message: Message;
     isLoading?: boolean;
+    className?: string;
 }
 
 const LoadingIndicator: React.FC = () => (
@@ -81,22 +83,46 @@ const MessageContent: React.FC<{ content: string }> = ({ content }) => {
     );
 }
 
-const ChatMessage: React.FC<ChatMessageProps> = ({ message, isLoading = false }) => {
+const ChatMessage: React.FC<ChatMessageProps> = ({ message, isLoading = false, className = '' }) => {
     const isAssistant = message.role === MessageRole.ASSISTANT;
+    const [isSpeaking, setIsSpeaking] = useState(false);
+
+    const handleListen = () => {
+        if (isSpeaking) {
+            stopSpeaking();
+            setIsSpeaking(false);
+        } else {
+            speakText(message.content, () => setIsSpeaking(false));
+            setIsSpeaking(true);
+        }
+    };
 
     return (
-        <div className={`group flex items-start ${isAssistant ? '' : 'flex-row-reverse'} animate-fadeInSlideUp ${typeof window !== 'undefined' && window.innerWidth <= 768 ? 'mb-3' : 'mb-2 sm:mb-4'} gap-2.5 sm:gap-3.5`}>
+        <div className={`group flex items-start ${isAssistant ? '' : 'flex-row-reverse'} animate-fadeInSlideUp ${typeof window !== 'undefined' && window.innerWidth <= 768 ? 'mb-3' : 'mb-2 sm:mb-4'} gap-2.5 sm:gap-3.5 ${className}`}>
             <div className="flex-shrink-0">
                 {isAssistant ? <FlagrIcon /> : <UserIcon />}
             </div>
             <div className={`flex flex-col flex-1 w-0 ${isAssistant ? 'items-start' : 'items-end'}`}>
                  <div className="flex items-end gap-2">
-                    <div className={`relative px-3 sm:px-4 py-2.5 sm:py-3 rounded-2xl ${
-                        isAssistant 
-                            ? 'bg-gradient-to-br from-neutral-800 to-neutral-800/80 text-gray-300 rounded-bl-none' 
-                            : 'bg-gradient-to-br from-neutral-700 to-neutral-700/80 text-gray-100 rounded-br-none'
-                    } ${typeof window !== 'undefined' && window.innerWidth <= 768 ? 'max-w-[85vw]' : 'max-w-full'}`}>
-                        {isLoading ? <LoadingIndicator /> : <MessageContent content={message.content} />}
+                    <div className={`relative px-5 sm:px-7 py-2.5 sm:py-3 min-h-[40px] sm:min-h-[48px] rounded-3xl shadow-lg flex items-center
+    ${isAssistant 
+        ? 'bg-neutral-800/90 text-gray-300 rounded-bl-2xl' 
+        : 'bg-neutral-700/90 text-gray-100 rounded-br-2xl'}
+    ${typeof window !== 'undefined' && window.innerWidth <= 768 ? 'max-w-[85vw]' : 'max-w-full'}`}
+                    >
+                        <div className="flex-1 flex items-center">
+                            {isLoading ? <LoadingIndicator /> : <MessageContent content={message.content} />}
+                        </div>
+                        {isAssistant && !isLoading && (
+                            <button
+                                onClick={handleListen}
+                                className={`ml-3 p-1.5 rounded-full border border-spotify text-spotify hover:bg-spotify/10 transition ${isSpeaking ? 'bg-spotify/20' : ''}`}
+                                aria-label={isSpeaking ? 'Stop listening' : 'Listen to message'}
+                                style={{ alignSelf: 'center' }}
+                            >
+                                <SpeakerIcon className="w-4 h-4" />
+                            </button>
+                        )}
                     </div>
                  </div>
                 {!isLoading && message.timestamp && (

@@ -56,3 +56,18 @@ export const ChevronsLeftIcon: React.FC<{className?: string}> = ({className}) =>
 export const MenuIcon: React.FC<{className?: string}> = ({className}) => <IconWrapper className={className}><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></IconWrapper>
 export const XIcon: React.FC<{className?: string}> = ({className}) => <IconWrapper className={className}><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></IconWrapper>
 export const LogOutIcon: React.FC<{className?: string}> = ({className}) => <IconWrapper className={className}><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></IconWrapper>
+export const SpeakerIcon: React.FC<{className?: string}> = ({className}) => (
+  <IconWrapper className={className}>
+    <polygon points="11 5 6 9 6 15 11 19 11 5" />
+    <path d="M19 12c0-2.21-1.79-4-4-4v8c2.21 0 4-1.79 4-4z" />
+  </IconWrapper>
+);
+
+export const MicrophoneIcon: React.FC<{className?: string}> = ({className}) => (
+  <IconWrapper className={className}>
+    <rect x="9" y="2" width="6" height="12" rx="3" />
+    <path d="M5 10v2a7 7 0 0 0 14 0v-2" />
+    <line x1="12" y1="22" x2="12" y2="18" />
+    <line x1="8" y1="22" x2="16" y2="22" />
+  </IconWrapper>
+);
