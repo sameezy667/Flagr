@@ -119,9 +119,8 @@ const InitialView: React.FC<InitialViewProps> = ({ onUploadClick, onRiskQuizClic
     const otherCards = cardData.slice(1);
 
     return (
-        <div className="relative">
-            {/* Fixed top-right button menu */}
-            <div className="fixed top-6 right-8 z-50 flex gap-2 justify-end items-center">
+        <div className="pt-6 relative">
+            <div className="absolute right-0 top-0 mt-6 mr-6 flex gap-2 z-20">
               <button
                 className="px-5 py-2.5 rounded-full font-bold text-spotify border-2 border-spotify bg-black shadow-lg transition-all duration-200 hover:bg-spotify hover:text-black hover:scale-105 focus:outline-none focus:ring-2 focus:ring-spotify text-base"
                 onClick={onRiskQuizClick}
@@ -135,37 +134,36 @@ const InitialView: React.FC<InitialViewProps> = ({ onUploadClick, onRiskQuizClic
                 Generate Template
               </button>
             </div>
-            {/* Main content with top padding to prevent overlap with fixed buttons */}
-            <div className="pt-24 overflow-y-auto h-[calc(100vh-6rem)]">
-              <div className="mb-6 sm:mb-8 animate-fadeInSlideUp">
-                   <h1 className="text-5xl sm:text-6xl md:text-7xl font-bold tracking-tight text-white mb-3 sm:mb-4 py-2">Flag Issues. Instantly.</h1>
-                  <p className="text-base sm:text-lg text-gray-400 max-w-2xl">
-                      Analyze documents, detect hidden flags, and translate complex language into clear, understandable insights with Flagr.
-                  </p>
-              </div>
-              <div className="space-y-4 sm:space-y-6 animate-fadeInSlideUp" style={{animationDelay: '150ms'}}>
-                  {/* Render Upload card only */}
-                  <ActionCard
-                      key={cardData[0].title}
-                      icon={cardData[0].icon}
-                      title={cardData[0].title}
-                      description={cardData[0].description}
-                      onClick={cardData[0].action}
-                      fullWidth={true}
-                  />
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-                      {otherCards.map(card => (
-                          <ActionCard 
-                              key={card.title} 
-                              icon={card.icon}
-                              title={card.title}
-                              description={card.description}
-                              onClick={card.action}
-                          />
-                      ))}
-                  </div>
-              </div>
+            {/* Main content remains unchanged */}
+            <div className="mb-6 sm:mb-8 animate-fadeInSlideUp">
+                 <h1 className="text-5xl sm:text-6xl md:text-7xl font-bold tracking-tight text-white mb-3 sm:mb-4 py-2">Flag Issues. Instantly.</h1>
+                <p className="text-base sm:text-lg text-gray-400 max-w-2xl">
+                    Analyze documents, detect hidden flags, and translate complex language into clear, understandable insights with Flagr.
+                </p>
             </div>
+            <div className="space-y-4 sm:space-y-6 animate-fadeInSlideUp" style={{animationDelay: '150ms'}}>
+                {/* Render Upload card only */}
+                <ActionCard
+                    key={cardData[0].title}
+                    icon={cardData[0].icon}
+                    title={cardData[0].title}
+                    description={cardData[0].description}
+                    onClick={cardData[0].action}
+                    fullWidth={true}
+                />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+                    {otherCards.map(card => (
+                        <ActionCard 
+                            key={card.title} 
+                            icon={card.icon}
+                            title={card.title}
+                            description={card.description}
+                            onClick={card.action}
+                        />
+                    ))}
+                </div>
+            </div>
+            {/* Remove chat panel container at the bottom */}
         </div>
     );
 };
