@@ -111,7 +111,7 @@ const Sidebar: React.FC<SidebarProps> = ({ sessions, activeSessionId, isExpanded
                     ? isExpanded 
                         ? 'fixed left-0 top-0 w-80 translate-x-0 transform' // restore original width and remove debug bg
                         : 'fixed left-0 top-0 w-0 -translate-x-full transform'
-                    : `${isExpanded ? 'w-64' : 'w-20'}`
+                    : `${isExpanded ? 'w-64' : 'w-20'} mt-6` // Add mt-6 for desktop only
                 }
                 ${!isMobile && 'p-2'}
                 ${isMobile && isExpanded && 'p-4'}
