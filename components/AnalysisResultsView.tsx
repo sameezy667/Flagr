@@ -512,7 +512,7 @@ const AnalysisResultsView: React.FC<AnalysisResultsViewProps> = ({ results, full
                         </button>
                         <button
                             type="button"
-                            onClick={e => {
+                            onClick={() => {
                                 setDropdownOpen(v => !v);
                                 if (!dropdownOpen && dropdownRef.current) {
                                     const rect = dropdownRef.current.getBoundingClientRect();
@@ -653,7 +653,7 @@ const AnalysisResultsView: React.FC<AnalysisResultsViewProps> = ({ results, full
                                 {localStorage.getItem('flagr_default_voice') === voice.voiceURI && <span className="ml-2 text-xs text-green-400">(Your Default)</span>}
                             </button>
                             <button
-                                onClick={e => { e.stopPropagation(); setDefaultVoice(voice.voiceURI); }}
+                                onClick={() => { setDefaultVoice(voice.voiceURI); }}
                                 className="ml-2 px-2 py-1 text-xs rounded bg-spotify/20 text-spotify hover:bg-spotify/40 border border-spotify"
                             >
                                 Set as Default
@@ -668,7 +668,7 @@ const AnalysisResultsView: React.FC<AnalysisResultsViewProps> = ({ results, full
                 <div className="relative">
                     <button
                         ref={shareButtonRef}
-                        onClick={e => {
+                        onClick={() => {
                             setShowShareDropdown(v => !v);
                             if (!showShareDropdown && shareButtonRef.current) {
                                 const rect = shareButtonRef.current.getBoundingClientRect();
