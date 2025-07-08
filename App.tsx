@@ -856,9 +856,6 @@ const App: React.FC = () => {
                         isExpanded={isSidebarExpanded}
                         onToggle={handleToggleSidebar}
                         isMobile={isMobile}
-                        isDarkMode={isDarkMode}
-                        toggleDarkMode={toggle}
-                        onRiskQuizClick={() => setShowRiskQuiz(true)}
                         onShowAnalytics={() => setAnalyticsOpen(true)}
                         onShowHistory={() => setHistoryOpen(true)}
                     />
@@ -890,9 +887,6 @@ const App: React.FC = () => {
                         isExpanded={isSidebarExpanded}
                         onToggle={handleToggleSidebar}
                         isMobile={isMobile}
-                        isDarkMode={isDarkMode}
-                        toggleDarkMode={toggle}
-                        onRiskQuizClick={() => setShowRiskQuiz(true)}
                         onShowAnalytics={() => setAnalyticsOpen(true)}
                         onShowHistory={() => setHistoryOpen(true)}
                     />

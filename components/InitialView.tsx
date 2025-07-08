@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef } from 'react';
 import {
     UploadIcon, LegalFindingsIcon, PlainLanguageIcon,
     RiskAssessmentIcon, PatternSearchIcon, AiInsightsIcon
@@ -180,12 +180,5 @@ const InitialView: React.FC<InitialViewProps> = ({ onUploadClick, onRiskQuizClic
         </div>
     );
 };
-
-interface SignaturePadProps {
-  onSave: (dataUrl: string) => void;
-  onClose: () => void;
-}
-
-// SignaturePad is defined but not used. Remove it to resolve TS6133 error.
 
 export default InitialView;

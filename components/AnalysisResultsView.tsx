@@ -9,11 +9,6 @@ import jsPDF from 'jspdf';
 import { v4 as uuidv4 } from 'uuid';
 import { Document, Packer, Paragraph, HeadingLevel } from 'docx';
 
-const getSeverityDot = (severity: 'Low' | 'Medium' | 'High') => {
-    const color = severity === 'High' ? 'bg-red-500' : severity === 'Medium' ? 'bg-yellow-400' : 'bg-sky-400';
-    return <span className={`inline-block w-2.5 h-2.5 rounded-full mr-2 ${color}`}></span>;
-};
-
 const getSeverityClass = (severity: 'Low' | 'Medium' | 'High') => {
     switch (severity) {
         case 'High': return 'bg-red-500/20 text-red-400 border-red-500/30 shadow-[0_0_10px_rgba(239,68,68,0.35)]';
