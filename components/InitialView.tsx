@@ -119,12 +119,7 @@ const InitialView: React.FC<InitialViewProps> = ({ onUploadClick, onRiskQuizClic
     const otherCards = cardData.slice(1);
 
     return (
-        <div
-            // Add top padding to prevent overlap with fixed top-right buttons
-            className="pt-[88px] sm:pt-[88px] md:pt-[40px]"
-            style={{ paddingTop: '88px' }}
-        >
-            {/* Top-right action buttons container */}
+        <div className="pt-6">
             <div className="flex gap-2 justify-end items-center mr-6">
               <button
                 className="px-5 py-2.5 rounded-full font-bold text-spotify border-2 border-spotify bg-black shadow-lg transition-all duration-200 hover:bg-spotify hover:text-black hover:scale-105 focus:outline-none focus:ring-2 focus:ring-spotify text-base"
@@ -139,7 +134,7 @@ const InitialView: React.FC<InitialViewProps> = ({ onUploadClick, onRiskQuizClic
                 Generate Template
               </button>
             </div>
-            {/* Remove old Take the Risk Quiz button from below the title */}
+            {/* Main content remains unchanged */}
             <div className="mb-6 sm:mb-8 animate-fadeInSlideUp">
                  <h1 className="text-5xl sm:text-6xl md:text-7xl font-bold tracking-tight text-white mb-3 sm:mb-4 py-2">Flag Issues. Instantly.</h1>
                 <p className="text-base sm:text-lg text-gray-400 max-w-2xl">
@@ -167,6 +162,10 @@ const InitialView: React.FC<InitialViewProps> = ({ onUploadClick, onRiskQuizClic
                         />
                     ))}
                 </div>
+            </div>
+            {/* Chat panel container at the bottom */}
+            <div className="w-full border-t border-neutral-800 bg-neutral-900 mt-8 p-4 rounded-b-xl shadow-lg">
+                {/* Chat panel will be rendered here by parent layout */}
             </div>
         </div>
     );
