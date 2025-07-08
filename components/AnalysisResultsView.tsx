@@ -642,11 +642,12 @@ const AnalysisResultsView: React.FC<AnalysisResultsViewProps> = ({ results, full
                         left: dropdownPosition.left,
                         minWidth: dropdownPosition.width,
                     }}
+                    onMouseDown={e => e.stopPropagation()}
                 >
                     {voices.map(voice => (
                         <div key={voice.voiceURI} className="flex items-center justify-between px-2 py-1 hover:bg-spotify/10 rounded transition">
                             <button
-                                onClick={() => { setSelectedVoiceURI(voice.voiceURI); setDropdownOpen(false); }}
+                                onClick={e => { e.stopPropagation(); setSelectedVoiceURI(voice.voiceURI); setDropdownOpen(false); }}
                                 className={`flex-1 text-left px-2 py-2 text-white hover:bg-spotify/20 focus:bg-spotify/30 transition rounded ${selectedVoiceURI === voice.voiceURI ? 'bg-spotify/10 font-bold text-spotify' : ''}`}
                             >
                                 {voice.name} <span className="text-xs text-gray-400">{voice.lang}</span> {voice.default ? <span className="text-xs text-spotify">(Default)</span> : ''}
