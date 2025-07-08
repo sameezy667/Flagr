@@ -685,11 +685,6 @@ const App: React.FC = () => {
         return (
             <InitialView
                 onUploadClick={triggerFileUpload}
-                onRiskQuizClick={() => setShowRiskQuiz(true)}
-                onGenerateTemplate={() => {
-                    console.log('App.tsx: onGenerateTemplate called');
-                    setShowTemplateModal(true);
-                }}
             />
         );
     };
