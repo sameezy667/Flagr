@@ -4,7 +4,7 @@ import { FlagrIcon, UserIcon, CopyIcon, CheckIcon, SpeakerIcon } from '../consta
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import { dark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { speakText, stopSpeaking } from '../services/speechService';
 
 interface ChatMessageProps {
@@ -61,7 +61,7 @@ const MessageContent: React.FC<{ content: string }> = ({ content }) => {
                             <div className="relative my-2">
                                 <CodeCopyButton text={codeText} />
                                 <SyntaxHighlighter
-                                    style={vscDarkPlus as any}
+                                    style={dark as any}
                                     language={match[1]}
                                     PreTag="div"
                                     className="!bg-neutral-900 rounded-lg !p-3 sm:!p-4 !text-xs sm:!text-sm"
