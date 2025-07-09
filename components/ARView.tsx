@@ -1,17 +1,16 @@
 import React, { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
-// @ts-ignore
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass';
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass';
-import { Font, FontLoader } from 'three/examples/jsm/loaders/FontLoader';
+import { Font } from 'three/examples/jsm/loaders/FontLoader';
 import helvetiker from 'three/examples/fonts/helvetiker_regular.typeface.json';
 import * as SimplexNoise from 'simplex-noise';
 import seedrandom from 'seedrandom';
 
 // --- Simple 2D noise function for organic surface ---
-function noise2D(x, y) {
+function noise2D(x: number, y: number): number {
   return (
     Math.sin(x * 0.23 + y * 0.31) * 0.5 +
     Math.cos(x * 0.11 - y * 0.17) * 0.5 +
@@ -20,7 +19,7 @@ function noise2D(x, y) {
 }
 
 // --- Inferno color scale (black → purple → magenta → orange → yellow) ---
-function getInfernoColor(t) {
+function getInfernoColor(t: number): THREE.Color {
   t = Math.max(0, Math.min(1, t));
   // Approximate inferno with 5 stops
   const c = [
@@ -41,36 +40,40 @@ function getInfernoColor(t) {
   );
 }
 
-const HIGHLIGHT_COLOR = new THREE.Color(1, 1, 0.6); // yellow-white
-
 // Accept risks as a prop
-const Heatmap3DView = ({ onClose, risks, seed: propSeed }) => {
-  const mountRef = useRef();
-  const rendererRef = useRef();
-  const controlsRef = useRef();
-  const [tooltip, setTooltip] = useState({ visible: false, x: 0, y: 0, name: '', score: null, description: '' });
-  const [htmlLabels, setHtmlLabels] = useState([]);
-  // Set riskDataState immediately on mount
-  const fallbackRisks = [
+interface RiskType {
+  label?: string;
+  name?: string;
+  score?: number;
+  description?: string;
+}
+interface Heatmap3DViewProps {
+  onClose: () => void;
+  risks: RiskType[];
+  seed?: string;
+}
+
+const Heatmap3DView: React.FC<Heatmap3DViewProps> = ({ onClose, risks, seed: propSeed }) => {
+  const mountRef = useRef<HTMLDivElement>(null);
+  const [tooltip, setTooltip] = useState<{ visible: boolean; x: number; y: number; name: string; score: number | null; description: string }>({ visible: false, x: 0, y: 0, name: '', score: null, description: '' });
+  const fallbackRisks: RiskType[] = [
     { label: 'Privacy', score: 6, description: "The agreement allows for monitoring and surveillance of the employee's digital communications and device usage." },
     { label: 'Career Options', score: 8, description: "The non-compete clause restricts the employee's ability to work for a competing business." },
     { label: 'Job Security', score: 4, description: "The at-will employment clause allows the company to terminate the employee's employment at any time." }
   ];
   const initialRisks = Array.isArray(risks) && risks.length ? [...risks] : fallbackRisks;
-  const [riskDataState, setRiskDataState] = useState(initialRisks);
-  console.log('risks prop:', risks);
-
+  const [riskDataState] = useState<RiskType[]>(initialRisks);
   // Generate a random seed if not provided
-  const [seed] = useState(() => propSeed || Math.random().toString(36).slice(2));
+  const [seed] = useState<string>(() => propSeed || Math.random().toString(36).slice(2));
 
   useEffect(() => {
     if (!mountRef.current) return;
-    mountRef.current.innerHTML = '';
+    (mountRef.current as HTMLDivElement).innerHTML = '';
     // Three.js setup
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
     renderer.setClearColor('#000');
     renderer.setSize(window.innerWidth, window.innerHeight);
-    mountRef.current.appendChild(renderer.domElement);
+    (mountRef.current as HTMLDivElement).appendChild(renderer.domElement);
     // Scene and camera
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.01, 1000);
@@ -104,16 +107,16 @@ const Heatmap3DView = ({ onClose, risks, seed: propSeed }) => {
     const raycaster = new THREE.Raycaster();
     const mouse = new THREE.Vector2();
     // Seeded noise setup
-    const rng = seedrandom(seed);
+    const rng: () => number = seedrandom(seed);
     const noise2D = SimplexNoise.createNoise2D(rng);
     const gridN = 160;
     const size = 22;
-    const positions = [];
-    const colors = [];
-    const indices = [];
+    const positions: number[] = [];
+    const colors: number[] = [];
+    const indices: number[] = [];
     let minY = Infinity, maxY = -Infinity;
     // Store peaks for risk names
-    const peaks = [];
+    const peaks: { x: number; y: number; z: number; i: number; yval: number }[] = [];
     for (let z = 0; z < gridN; z++) {
       for (let x = 0; x < gridN; x++) {
         const u = x / (gridN - 1);
@@ -180,25 +183,19 @@ const Heatmap3DView = ({ onClose, risks, seed: propSeed }) => {
     }
     window.addEventListener('resize', onResize);
     // Use real risks prop if provided, otherwise fallback
-    // REMOVE: const riskData = Array.isArray(risks) && risks.length ? [...risks] : [
-    // REMOVE:   { label: 'Privacy', score: 6, description: "The agreement allows for monitoring and surveillance of the employee's digital communications and device usage." },
-    // REMOVE:   { label: 'Career Options', score: 8, description: "The non-compete clause restricts the employee's ability to work for a competing business." },
-    // REMOVE:   { label: 'Job Security', score: 4, description: "The at-will employment clause allows the company to terminate the employee's employment at any time." }
-    // REMOVE: ];
-    // setRiskDataState(riskData); // <-- no longer needed here
     console.log('riskData:', riskDataState);
     // Sort by score descending if available
     if (riskDataState[0] && typeof riskDataState[0].score === 'number') {
-      riskDataState.sort((a, b) => b.score - a.score);
+      riskDataState.sort((a, b) => (b.score || 0) - (a.score || 0));
     }
     peaks.sort((a, b) => b.yval - a.yval);
-    const peakMap = {};
+    const peakMap: { [key: number]: RiskType } = {};
     for (let i = 0; i < riskDataState.length; i++) {
       peakMap[peaks[i].i] = riskDataState[i];
     }
     console.log('riskData:', riskDataState);
     // Raycast on mouse move
-    function onPointerMove(e) {
+    function onPointerMove(e: MouseEvent) {
       const rect = renderer.domElement.getBoundingClientRect();
       mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
       mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
@@ -206,20 +203,17 @@ const Heatmap3DView = ({ onClose, risks, seed: propSeed }) => {
       const intersects = raycaster.intersectObject(mesh);
       if (intersects.length > 0) {
         // Find closest vertex
-        const idx = intersects[0].face.a;
-        const pos = geometry.attributes.position;
-        const vx = pos.getX(idx);
-        const vy = pos.getY(idx);
-        const vz = pos.getZ(idx);
+        const idx = intersects[0].face?.a;
+        if (typeof idx !== 'number') return;
         const risk = peakMap[idx];
         if (risk) {
           setTooltip({
             visible: true,
             x: e.clientX,
             y: e.clientY,
-            name: risk.name,
-            score: risk.score,
-            description: risk.description
+            name: risk.name || '',
+            score: risk.score ?? null,
+            description: risk.description || ''
           });
           return;
         }
@@ -228,26 +222,8 @@ const Heatmap3DView = ({ onClose, risks, seed: propSeed }) => {
     }
     renderer.domElement.addEventListener('pointermove', onPointerMove);
     renderer.domElement.addEventListener('pointerleave', () => setTooltip(t => ({ ...t, visible: false })));
-      // Remove dynamic import of TextGeometry (no longer needed)
-      const font = new Font(helvetiker.default || helvetiker);
-    // Always render HTML overlays for risk names
-    // const labeledPeaks = []; // REMOVED
-    // for (let i = 0; i < riskDataState.length; i++) { // REMOVED
-    //   const peak = peaks[i]; // REMOVED
-    //   const risk = riskDataState[i]; // REMOVED
-    //   if (!peak || !risk) continue; // REMOVED
-    //   labeledPeaks.push({ // REMOVED
-    //     name: risk.label || risk.name, // REMOVED
-    //     score: risk.score, // REMOVED
-    //     description: risk.description, // REMOVED
-    //     x: peak.x, // REMOVED
-    //     y: peak.y + 3.2, // REMOVED
-    //     z: peak.z // REMOVED
-    //   }); // REMOVED
-    // } // REMOVED
-    // console.log('labeledPeaks:', labeledPeaks); // REMOVED
     // Animation loop (auto-rotate + controls + bloom)
-    let frameId;
+    let frameId: number;
     function animate() {
       mesh.rotation.y += 0.0015;
       controls.update();
@@ -264,9 +240,16 @@ const Heatmap3DView = ({ onClose, risks, seed: propSeed }) => {
       window.removeEventListener('resize', onResize);
     };
     if (typeof window !== 'undefined') {
-      window._arview_cleanup = cleanup;
+      (window as any)._arview_cleanup = cleanup;
     }
-  }, []);
+    // Cleanup
+    return () => {
+      if (typeof window !== 'undefined' && (window as any)._arview_cleanup) {
+        (window as any)._arview_cleanup();
+        delete (window as any)._arview_cleanup;
+      }
+    };
+  }, [riskDataState, seed]);
 
   // Tooltip overlay
   return (
@@ -332,6 +315,6 @@ const Heatmap3DView = ({ onClose, risks, seed: propSeed }) => {
       <button onClick={onClose} style={{ position: 'absolute', top: 24, right: 24, zIndex: 10, background: '#222', color: '#fff', border: 'none', borderRadius: 8, padding: '12px 20px', fontSize: 18, cursor: 'pointer', opacity: 0.85, fontFamily: 'sans-serif' }}>Close Visual</button>
     </div>
   );
-}
+};
 
 export default Heatmap3DView; 
