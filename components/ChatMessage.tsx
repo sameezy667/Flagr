@@ -5,7 +5,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 // @ts-ignore
-import { dark } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import { vs } from 'react-syntax-highlighter/dist/esm/styles';
 import { speakText, stopSpeaking } from '../services/speechService';
 
 interface ChatMessageProps {
@@ -62,7 +62,7 @@ const MessageContent: React.FC<{ content: string }> = ({ content }) => {
                             <div className="relative my-2">
                                 <CodeCopyButton text={codeText} />
                                 <SyntaxHighlighter
-                                    style={dark as any}
+                                    style={vs as any}
                                     language={match[1]}
                                     PreTag="div"
                                     className="!bg-neutral-900 rounded-lg !p-3 sm:!p-4 !text-xs sm:!text-sm"
