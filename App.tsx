@@ -678,6 +678,7 @@ const App: React.FC = () => {
                     onCloseAnalytics={() => setAnalyticsOpen(false)}
                     historyOpen={historyOpen}
                     onCloseHistory={() => setHistoryOpen(false)}
+                    activeSessionId={activeSessionId}
                 />
             );
         }

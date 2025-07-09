@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect, useMemo } from 'react';
 import ReactDOM from 'react-dom';
 import { AnalysisResult, Flag, Risk, Insight } from '../types';
 import {
@@ -8,6 +8,8 @@ import { speakText, stopSpeaking } from '../services/speechService';
 import jsPDF from 'jspdf';
 import { v4 as uuidv4 } from 'uuid';
 import { Document, Packer, Paragraph, HeadingLevel } from 'docx';
+import DocumentInfographics from './DocumentInfographics';
+import Heatmap3DView from './ARView';
 
 const getSeverityClass = (severity: 'Low' | 'Medium' | 'High') => {
     switch (severity) {
@@ -154,9 +156,10 @@ interface AnalysisResultsViewProps {
     onCloseAnalytics?: () => void;
     historyOpen?: boolean;
     onCloseHistory?: () => void;
+    activeSessionId?: string;
 }
 
-const AnalysisResultsView: React.FC<AnalysisResultsViewProps> = ({ results, fullText, analyticsOpen, onCloseAnalytics, historyOpen, onCloseHistory }) => {
+const AnalysisResultsView: React.FC<AnalysisResultsViewProps> = ({ results, fullText, analyticsOpen, onCloseAnalytics, historyOpen, onCloseHistory, activeSessionId }) => {
     const [isSpeaking, setIsSpeaking] = useState(false);
     const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
     const [selectedVoiceURI, setSelectedVoiceURI] = useState<string | undefined>(undefined);
@@ -172,6 +175,13 @@ const AnalysisResultsView: React.FC<AnalysisResultsViewProps> = ({ results, full
     const shareButtonRef = useRef<HTMLButtonElement>(null);
     const downloadButtonRef = useRef<HTMLButtonElement>(null);
     const [downloadDropdownPosition, setDownloadDropdownPosition] = useState<{top: number, left: number, width: number} | null>(null);
+    const [showHeatmap, setShowHeatmap] = useState(false);
+    // Generate a new random seed for each analysis/chat
+    const heatmapSeed = useMemo(() => Math.random().toString(36).slice(2), [results, activeSessionId]);
+    // Auto-close heatmap on chat/session switch
+    useEffect(() => {
+        setShowHeatmap(false);
+    }, [activeSessionId]);
 
     // Load voices on mount and when voices change
     useEffect(() => {
@@ -420,6 +430,8 @@ const AnalysisResultsView: React.FC<AnalysisResultsViewProps> = ({ results, full
         window.location.href = `mailto:?subject=${subject}&body=${body}`;
     };
 
+    const riskData = results.riskAssessment?.risks?.map(risk => ({ area: risk.area, score: risk.score })) || [];
+
     // Analytics modal content
     const renderAnalyticsModal = (onClose: () => void) => (
         <div className="fixed inset-0 z-[11000] flex items-center justify-center p-2 sm:p-4 bg-black/70 backdrop-blur animate-fadeIn" onClick={onClose}>
@@ -497,7 +509,7 @@ const AnalysisResultsView: React.FC<AnalysisResultsViewProps> = ({ results, full
     );
 
     return (
-        <div className="max-w-5xl mx-auto p-6">
+        <div className="max-w-7xl mx-auto p-6">
             <div className="flex flex-row-reverse items-center justify-between mb-4 gap-3">
                 <div className="flex gap-2 items-center" ref={dropdownRef}>
                     <div className="flex">
@@ -576,55 +588,75 @@ const AnalysisResultsView: React.FC<AnalysisResultsViewProps> = ({ results, full
                 </div>
                 <h3 className="text-xl font-bold text-white flex-1">Analysis for: <strong>{detectedType}</strong></h3>
             </div>
-            <div className="space-y-6">
-                <AnalysisCard
-                    icon={<PlainLanguageIcon className="w-6 h-6" />}
-                    title="Plain Language Summary"
+            {/* Heatmap Button */}
+            <div className="flex justify-end mb-4">
+                <button
+                    onClick={() => setShowHeatmap(true)}
+                    className="px-6 py-3 rounded-full border-2 border-spotify text-spotify font-bold bg-black hover:bg-spotify hover:text-black transition shadow-lg"
                 >
-                    <p className="text-neutral-300 leading-relaxed flex-1">{results.plainLanguageSummary}</p>
-                </AnalysisCard>
-                <AnalysisCard
-                    icon={<RiskAssessmentIcon className="w-6 h-6" />}
-                    title="Risk Assessment"
-                >
-                    <div className="mb-2">
-                        <p className="text-neutral-300 flex-1">{results.riskAssessment.overallSummary}</p>
-                    </div>
-                    <div className="space-y-3 mt-2">
-                        {results.riskAssessment.risks.map((risk, i) => (
-                            <RiskBar key={i} risk={risk} />
-                        ))}
-                    </div>
-                </AnalysisCard>
-                <AnalysisCard
-                    icon={<AiInsightsIcon className="w-6 h-6" />}
-                    title="AI Insights"
-                >
-                    <div className="mb-2">
-                        <p className="text-neutral-300 flex-1">{results.aiInsights.overallSummary}</p>
-                    </div>
-                    <div className="space-y-3 mt-2">
-                        {results.aiInsights.recommendations.map((insight, i) => (
-                            <InsightCard key={i} insight={insight} />
-                        ))}
-                    </div>
-                </AnalysisCard>
-                <AnalysisCard
-                    icon={<LegalFindingsIcon className="w-6 h-6" />}
-                    title="Flags Found"
-                >
-                    <div className="space-y-4">
-                        {results.flags.length > 0 ? (
-                            results.flags.map(flag => (
-                                <div key={flag.id} className="cursor-pointer transition border-l-4 pl-2 border-transparent hover:bg-neutral-800/50">
-                                    <FlagCard flag={flag} />
-                                </div>
-                            ))
-                        ) : (
-                            <p className="text-neutral-400">No significant flags were detected in the document.</p>
-                        )}
-                    </div>
-                </AnalysisCard>
+                    View Heatmap
+                </button>
+            </div>
+            {/* Heatmap Modal */}
+            {showHeatmap && (
+                <Heatmap3DView risks={riskData} onClose={() => setShowHeatmap(false)} seed={heatmapSeed} />
+            )}
+            <div className="flex flex-col md:flex-row gap-8 w-full">
+                {/* Left: Analysis Cards */}
+                <div className="flex-1 space-y-6">
+                    <AnalysisCard
+                        icon={<PlainLanguageIcon className="w-6 h-6" />}
+                        title="Plain Language Summary"
+                    >
+                        <p className="text-neutral-300 leading-relaxed flex-1">{results.plainLanguageSummary}</p>
+                    </AnalysisCard>
+                    <AnalysisCard
+                        icon={<RiskAssessmentIcon className="w-6 h-6" />}
+                        title="Risk Assessment"
+                    >
+                        <div className="mb-2">
+                            <p className="text-neutral-300 flex-1">{results.riskAssessment.overallSummary}</p>
+                        </div>
+                        <div className="space-y-3 mt-2">
+                            {results.riskAssessment.risks.map((risk, i) => (
+                                <RiskBar key={i} risk={risk} />
+                            ))}
+                        </div>
+                    </AnalysisCard>
+                    <AnalysisCard
+                        icon={<AiInsightsIcon className="w-6 h-6" />}
+                        title="AI Insights"
+                    >
+                        <div className="mb-2">
+                            <p className="text-neutral-300 flex-1">{results.aiInsights.overallSummary}</p>
+                        </div>
+                        <div className="space-y-3 mt-2">
+                            {results.aiInsights.recommendations.map((insight, i) => (
+                                <InsightCard key={i} insight={insight} />
+                            ))}
+                        </div>
+                    </AnalysisCard>
+                    <AnalysisCard
+                        icon={<LegalFindingsIcon className="w-6 h-6" />}
+                        title="Flags Found"
+                    >
+                        <div className="space-y-4">
+                            {results.flags.length > 0 ? (
+                                results.flags.map(flag => (
+                                    <div key={flag.id} className="cursor-pointer transition border-l-4 pl-2 border-transparent hover:bg-neutral-800/50">
+                                        <FlagCard flag={flag} />
+                                    </div>
+                                ))
+                            ) : (
+                                <p className="text-neutral-400">No significant flags were detected in the document.</p>
+                            )}
+                        </div>
+                    </AnalysisCard>
+                </div>
+                {/* Right: Infographics Sidebar */}
+                <div className="w-full md:w-[380px] flex-shrink-0 md:sticky md:top-8 h-fit">
+                    <DocumentInfographics results={results} />
+                </div>
             </div>
             {analyticsOpen && renderAnalyticsModal(onCloseAnalytics || (() => {})) }
             {historyOpen && renderHistoryModal(onCloseHistory || (() => {})) }
