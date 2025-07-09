@@ -4,7 +4,8 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass';
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass';
-import * as SimplexNoise from 'simplex-noise';
+// @ts-ignore
+import SimplexNoise from 'simplex-noise';
 import seedrandom from 'seedrandom';
 
 // --- Inferno color scale (black → purple → magenta → orange → yellow) ---
