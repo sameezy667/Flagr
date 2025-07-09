@@ -4,7 +4,7 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass';
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass';
-import SimplexNoise from 'simplex-noise';
+import * as SimplexNoise from 'simplex-noise';
 import seedrandom from 'seedrandom';
 
 // --- Inferno color scale (black → purple → magenta → orange → yellow) ---
@@ -97,7 +97,7 @@ const Heatmap3DView: React.FC<Heatmap3DViewProps> = ({ onClose, risks, seed: pro
     const mouse = new THREE.Vector2();
     // Seeded noise setup
     const rng: () => number = seedrandom(seed);
-    const simplex = new SimplexNoise(rng);
+    const simplex = new (SimplexNoise.default || SimplexNoise)(rng);
     const noise2D = simplex.noise2D.bind(simplex);
     const gridN = 160;
     const size = 22;
