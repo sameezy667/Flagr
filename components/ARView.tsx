@@ -7,15 +7,6 @@ import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPa
 import * as SimplexNoise from 'simplex-noise';
 import seedrandom from 'seedrandom';
 
-// --- Simple 2D noise function for organic surface ---
-function noise2D(x: number, y: number): number {
-  return (
-    Math.sin(x * 0.23 + y * 0.31) * 0.5 +
-    Math.cos(x * 0.11 - y * 0.17) * 0.5 +
-    Math.sin(x * 0.19 + y * 0.13) * 0.3
-  );
-}
-
 // --- Inferno color scale (black → purple → magenta → orange → yellow) ---
 function getInfernoColor(t: number): THREE.Color {
   t = Math.max(0, Math.min(1, t));
