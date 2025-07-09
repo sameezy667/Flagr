@@ -4,8 +4,6 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass';
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass';
-import { Font } from 'three/examples/jsm/loaders/FontLoader';
-import helvetiker from 'three/examples/fonts/helvetiker_regular.typeface.json';
 import * as SimplexNoise from 'simplex-noise';
 import seedrandom from 'seedrandom';
 

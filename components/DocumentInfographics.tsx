@@ -50,7 +50,7 @@ function getHeatmapColor(score: number) {
   return 'rgba(255,255,255,0.95)'; // white
 }
 
-function getHeatmapGradient(ctx, x, y, radius, score) {
+function getHeatmapGradient(ctx: CanvasRenderingContext2D, x: number, y: number, radius: number, score: number) {
   // Multi-stop radial gradient: deep blue-cyan-green-yellow-orange-red-white
   const grad = ctx.createRadialGradient(x, y, 0, x, y, radius);
   grad.addColorStop(0, getHeatmapColor(score));
