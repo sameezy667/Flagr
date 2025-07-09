@@ -5,7 +5,7 @@ import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass';
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass';
 // @ts-ignore
-import SimplexNoise from 'simplex-noise';
+const SimplexNoise = require('simplex-noise');
 import seedrandom from 'seedrandom';
 
 // --- Inferno color scale (black → purple → magenta → orange → yellow) ---
