@@ -161,7 +161,7 @@ const DensityHeatmap: React.FC<{ risks: { area: string; score: number }[] }> = (
         {/* No glowing border */}
       </div>
       <div className="flex justify-between w-full mt-2 px-2">
-        {risks.map((risk, i) => (
+        {risks.map(risk => (
           <span key={risk.area} className="text-xs text-gray-400" style={{ width: `${100 / risks.length}%`, textAlign: 'center' }}>{risk.area}</span>
         ))}
       </div>
@@ -278,7 +278,7 @@ const DocumentInfographics: React.FC<DocumentInfographicsProps> = ({ results }) 
               outerRadius={80}
               label
             >
-              {flagData.map((entry, index) => (
+              {flagData.map((_, index) => (
                 <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
               ))}
             </Pie>
