@@ -60,7 +60,7 @@ const MessageContent: React.FC<{ content: string }> = ({ content }) => {
                             <div className="relative my-2">
                                 <CodeCopyButton text={codeText} />
                                 <SyntaxHighlighter
-                                    style={{
+                                    customStyle={{
                                       backgroundColor: '#1e1e1e',
                                       color: '#d4d4d4',
                                       fontFamily: 'Consolas, Monaco, "Andale Mono", "Ubuntu Mono", monospace',
