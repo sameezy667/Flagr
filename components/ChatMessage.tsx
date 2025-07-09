@@ -3,8 +3,8 @@ import { Message, MessageRole } from '../types';
 import { FlagrIcon, UserIcon, CopyIcon, CheckIcon, SpeakerIcon } from '../constants';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { dark } from 'react-syntax-highlighter/styles/prism';
+// @ts-ignore
+import { dark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { speakText, stopSpeaking } from '../services/speechService';
 
 interface ChatMessageProps {
