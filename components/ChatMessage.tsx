@@ -4,8 +4,6 @@ import { FlagrIcon, UserIcon, CopyIcon, CheckIcon, SpeakerIcon } from '../consta
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-// @ts-ignore
-import { vs } from 'react-syntax-highlighter/dist/esm/styles';
 import { speakText, stopSpeaking } from '../services/speechService';
 
 interface ChatMessageProps {
@@ -62,7 +60,16 @@ const MessageContent: React.FC<{ content: string }> = ({ content }) => {
                             <div className="relative my-2">
                                 <CodeCopyButton text={codeText} />
                                 <SyntaxHighlighter
-                                    style={vs as any}
+                                    style={{
+                                      backgroundColor: '#1e1e1e',
+                                      color: '#d4d4d4',
+                                      fontFamily: 'Consolas, Monaco, "Andale Mono", "Ubuntu Mono", monospace',
+                                      fontSize: '14px',
+                                      lineHeight: '1.5',
+                                      padding: '16px',
+                                      borderRadius: '8px',
+                                      overflow: 'auto'
+                                    }}
                                     language={match[1]}
                                     PreTag="div"
                                     className="!bg-neutral-900 rounded-lg !p-3 sm:!p-4 !text-xs sm:!text-sm"
