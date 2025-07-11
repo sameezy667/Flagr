@@ -2,31 +2,7 @@ import * as pdfjsLib from 'pdfjs-dist';
 import mammoth from 'mammoth';
 import { TextStats } from '../types';
 
-// PDF.js worker configuration with fallback
-const workerSources = [
-    'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.5.136/build/pdf.worker.min.js',
-    'https://unpkg.com/pdfjs-dist@4.5.136/build/pdf.worker.min.js',
-    'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.5.136/pdf.worker.min.js'
-];
-
-// Try to set the worker source with fallback
-let workerSet = false;
-for (const source of workerSources) {
-    try {
-        pdfjsLib.GlobalWorkerOptions.workerSrc = source;
-        console.log('[DEBUG] PDF.js worker set to:', source);
-        workerSet = true;
-        break;
-    } catch (error) {
-        console.warn('[DEBUG] Failed to set worker source:', source, error);
-    }
-}
-
-if (!workerSet) {
-    console.error('[DEBUG] Failed to set any PDF.js worker source');
-}
-
-// Disable PDF.js worker to use main thread processing
+// PDF.js worker configuration - disable worker to use main thread
 pdfjsLib.GlobalWorkerOptions.workerSrc = false;
 console.log('[DEBUG] PDF.js worker disabled, using main thread');
 
