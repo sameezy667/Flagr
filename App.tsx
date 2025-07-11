@@ -16,9 +16,10 @@ import { extractTextFromFile, cleanText, detectDocumentType, getTextStats } from
 import { CheckIcon, FlagrLogo } from './constants';
 import Tesseract from 'tesseract.js';
 import * as pdfjsLib from 'pdfjs-dist';
+import pdfjsWorker from 'pdfjs-dist/build/pdf.worker.min.js';
 import SignaturePad from './components/SignaturePad';
 
-(pdfjsLib as any).GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@5.3.93/build/pdf.worker.min.js`;
+(pdfjsLib as any).GlobalWorkerOptions.workerSrc = pdfjsWorker;
 
 const useMediaQuery = (query: string) => {
     const [matches, setMatches] = useState(false);

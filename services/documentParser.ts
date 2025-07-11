@@ -1,9 +1,10 @@
 import * as pdfjsLib from 'pdfjs-dist';
 import mammoth from 'mammoth';
 import { TextStats } from '../types';
+import pdfjsWorker from 'pdfjs-dist/build/pdf.worker.min.js';
 
 // PDF.js worker configuration
-pdfjsLib.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@5.3.93/build/pdf.worker.min.js`;
+pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker;
 
 // Helper to read file as ArrayBuffer
 const readAsArrayBuffer = (file: File): Promise<ArrayBuffer> => {
