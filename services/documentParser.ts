@@ -3,7 +3,7 @@ import mammoth from 'mammoth';
 import { TextStats } from '../types';
 
 // PDF.js worker configuration
-// pdfjsLib.GlobalWorkerOptions.workerSrc = `https://esm.sh/pdfjs-dist@4.5.136/build/pdf.worker.mjs`;
+pdfjsLib.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@5.3.93/build/pdf.worker.min.js`;
 
 // Helper to read file as ArrayBuffer
 const readAsArrayBuffer = (file: File): Promise<ArrayBuffer> => {

@@ -18,7 +18,7 @@ import Tesseract from 'tesseract.js';
 import * as pdfjsLib from 'pdfjs-dist';
 import SignaturePad from './components/SignaturePad';
 
-(pdfjsLib as any).GlobalWorkerOptions.workerSrc = '/pdf.worker.js';
+(pdfjsLib as any).GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@5.3.93/build/pdf.worker.min.js`;
 
 const useMediaQuery = (query: string) => {
     const [matches, setMatches] = useState(false);
