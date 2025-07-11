@@ -19,7 +19,7 @@ import * as pdfjsLib from 'pdfjs-dist';
 import SignaturePad from './components/SignaturePad';
 
 // PDF.js worker configuration - disable worker to use main thread
-(pdfjsLib as any).GlobalWorkerOptions.workerSrc = null as any;
+(pdfjsLib as any).GlobalWorkerOptions.workerSrc = '/pdf.worker.js';
 console.log('[DEBUG] PDF.js worker disabled, using main thread');
 
 const useMediaQuery = (query: string) => {
