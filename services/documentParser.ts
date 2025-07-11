@@ -3,7 +3,7 @@ import mammoth from 'mammoth';
 import { TextStats } from '../types';
 
 // PDF.js worker configuration - disable worker to use main thread
-pdfjsLib.GlobalWorkerOptions.workerSrc = false;
+pdfjsLib.GlobalWorkerOptions.workerSrc = null;
 console.log('[DEBUG] PDF.js worker disabled, using main thread');
 
 // Helper to read file as ArrayBuffer
