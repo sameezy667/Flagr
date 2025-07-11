@@ -16,7 +16,7 @@ import { extractTextFromFile, cleanText, detectDocumentType, getTextStats } from
 import { CheckIcon, FlagrLogo } from './constants';
 import Tesseract from 'tesseract.js';
 import * as pdfjsLib from 'pdfjs-dist';
-import pdfjsWorker from 'pdfjs-dist/build/pdf.worker.min.js';
+import pdfjsWorker from 'pdfjs-dist/build/pdf.worker.entry';
 import SignaturePad from './components/SignaturePad';
 
 (pdfjsLib as any).GlobalWorkerOptions.workerSrc = pdfjsWorker;

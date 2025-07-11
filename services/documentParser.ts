@@ -1,7 +1,7 @@
 import * as pdfjsLib from 'pdfjs-dist';
 import mammoth from 'mammoth';
 import { TextStats } from '../types';
-import pdfjsWorker from 'pdfjs-dist/build/pdf.worker.min.js';
+import pdfjsWorker from 'pdfjs-dist/build/pdf.worker.entry';
 
 // PDF.js worker configuration
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker;
