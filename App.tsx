@@ -393,6 +393,7 @@ const App: React.FC = () => {
     }, [isMobile]);
 
     const handleFileUpload = useCallback(async (file: File) => {
+        console.log('[DEBUG] handleFileUpload called with file:', file);
         if (!file) return;
         try {
             let text = '';
@@ -436,19 +437,23 @@ const App: React.FC = () => {
                 setToastMessage(null);
             } else if (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) {
                 setToastMessage('Extracting text from PDF...');
+                console.log('[DEBUG] Starting PDF extraction');
                 const reader = new FileReader();
                 const arrayBuffer = await new Promise<ArrayBuffer>((resolve, reject) => {
                     reader.onload = () => resolve(reader.result as ArrayBuffer);
                     reader.onerror = reject;
                     reader.readAsArrayBuffer(file);
                 });
+                console.log('[DEBUG] Got arrayBuffer for PDF, length:', arrayBuffer.byteLength);
                 const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+                console.log('[DEBUG] Loaded PDF, numPages:', pdf.numPages);
                 let pdfText = '';
                 for (let i = 1; i <= pdf.numPages; i++) {
                     const page = await pdf.getPage(i);
                     const content = await page.getTextContent();
                     const pageText = content.items.map(item => ('str' in item ? item.str : '')).join(' ');
                     pdfText += pageText + '\n';
+                    console.log(`[DEBUG] Extracted text from page ${i}`);
                 }
                 text = pdfText;
                 setToastMessage(null);
@@ -457,6 +462,7 @@ const App: React.FC = () => {
             }
             setFullText(text); // Store the original text for highlighting
             const cleanedText = cleanText(text);
+            console.log('[DEBUG] Cleaned text:', cleanedText.slice(0, 200));
             if (cleanedText.trim().length > 0) {
                 await runDocumentAnalysis(file, cleanedText);
             } else {
@@ -465,7 +471,7 @@ const App: React.FC = () => {
         } catch(error) {
             setToastMessage(null);
             alert(`Error processing file '${file.name}': ${error instanceof Error ? error.message : 'An unknown error occurred'}`);
-            console.error(error);
+            console.error('[DEBUG] Error in handleFileUpload:', error);
         }
     }, [runDocumentAnalysis]);
 
