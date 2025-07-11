@@ -19,7 +19,7 @@ import * as pdfjsLib from 'pdfjs-dist';
 import pdfjsWorker from 'pdfjs-dist/build/pdf.worker.entry';
 import SignaturePad from './components/SignaturePad';
 
-(pdfjsLib as any).GlobalWorkerOptions.workerSrc = pdfjsWorker;
+(pdfjsLib as any).GlobalWorkerOptions.workerSrc = '/pdf.worker.js';
 
 const useMediaQuery = (query: string) => {
     const [matches, setMatches] = useState(false);
