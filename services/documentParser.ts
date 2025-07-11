@@ -26,6 +26,10 @@ if (!workerSet) {
     console.error('[DEBUG] Failed to set any PDF.js worker source');
 }
 
+// Disable PDF.js worker to use main thread processing
+pdfjsLib.GlobalWorkerOptions.workerSrc = false;
+console.log('[DEBUG] PDF.js worker disabled, using main thread');
+
 // Helper to read file as ArrayBuffer
 const readAsArrayBuffer = (file: File): Promise<ArrayBuffer> => {
     return new Promise((resolve, reject) => {

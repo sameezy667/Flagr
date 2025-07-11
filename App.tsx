@@ -42,6 +42,10 @@ if (!workerSet) {
     console.error('[DEBUG] Failed to set any PDF.js worker source');
 }
 
+// Disable PDF.js worker to use main thread processing
+(pdfjsLib as any).GlobalWorkerOptions.workerSrc = false;
+console.log('[DEBUG] PDF.js worker disabled, using main thread');
+
 const useMediaQuery = (query: string) => {
     const [matches, setMatches] = useState(false);
     useEffect(() => {
