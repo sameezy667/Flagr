@@ -64,7 +64,6 @@ export async function generateDocumentAnalysis(
         generationConfig: {
           temperature: 0.1,
           maxOutputTokens: 4096,
-          responseMimeType: "application/json",
         },
       }),
     });
