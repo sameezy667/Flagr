@@ -14,7 +14,9 @@ const MODEL_NAME = 'gemini-2.0-flash-exp';
  * The prompt now only needs to describe the *content* of the JSON.
  */
 function getDocumentAnalysisPrompt(docType: string): string {
-  return `You are an expert AI legal assistant. Your task is to analyze a ${docType} and return a structured JSON object. The JSON output must conform to this exact TypeScript interface:
+  return `You are an expert AI legal assistant. Your task is to analyze a ${docType} and return ONLY a valid JSON object with no other text, explanations, or markdown formatting.
+
+The JSON output must conform to this exact TypeScript interface:
 interface AIAnalysisData {
   plainLanguageSummary: string;
   flags: { id: string; title: string; clause: string; explanation: string; severity: 'Low' | 'Medium' | 'High'; suggestedRewrite: string; }[];
@@ -22,6 +24,8 @@ interface AIAnalysisData {
   aiInsights: { overallSummary: string; recommendations: { id: string; recommendation: string; justification: string; }[]; };
   detectedDocType?: string;
 }
+
+CRITICAL: Return ONLY the raw JSON object. Do not wrap it in markdown code blocks. Do not add any explanation before or after the JSON.
 
 First, as a preliminary step, identify the most likely type of this document (e.g., 'Employment Agreement', 'Privacy Policy', 'Terms of Service'). Add this identification to the final JSON object under a key called 'detectedDocType'. Then, proceed with the rest of the analysis as requested.
 
@@ -32,7 +36,8 @@ GUIDELINES:
 4.  **aiInsights**: Provide an 'overallSummary' and 'recommendations'.
 5.  **suggestedRewrite**: For each flag you create, also provide a 'suggestedRewrite' property. This should contain a rewritten version of the clause that is safer and more favorable to the user.
 Generate at least 2-3 flags, 2-3 risks, and 2-3 insights for a complex document.
-`;
+
+REMEMBER: Output ONLY the JSON object, nothing else.`;
 }
 
 /**
@@ -81,7 +86,24 @@ export async function generateDocumentAnalysis(
       throw new Error("API response did not contain a valid message.");
     }
     
-    const parsedData = JSON.parse(messageContent);
+    console.log('Raw AI response:', messageContent);
+    
+    // Try to extract JSON from the response (remove markdown code blocks if present)
+    let jsonString = messageContent.trim();
+    
+    // Remove markdown code blocks
+    const codeBlockMatch = jsonString.match(/```(?:json)?\s*\n?([\s\S]*?)\n?```/);
+    if (codeBlockMatch) {
+      jsonString = codeBlockMatch[1].trim();
+    }
+    
+    // Try to find JSON object in the text
+    const jsonMatch = jsonString.match(/\{[\s\S]*\}/);
+    if (jsonMatch) {
+      jsonString = jsonMatch[0];
+    }
+    
+    const parsedData = JSON5.parse(jsonString);
     return parsedData as AIAnalysisData;
 
   } catch (error) {
