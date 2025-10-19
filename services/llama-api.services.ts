@@ -7,7 +7,7 @@ import JSON5 from 'json5';
 // --- CONFIGURATION ---
 const API_BASE_URL = 'https://generativelanguage.googleapis.com/v1beta/models';
 const API_KEY = import.meta.env.VITE_GEMINI_API_KEY; 
-const MODEL_NAME = 'gemini-pro';
+const MODEL_NAME = 'gemini-2.0-flash-exp';
 
 /**
  * Creates the detailed system prompt for document analysis.
