@@ -5,9 +5,9 @@ import { Message, MessageRole, AIAnalysisData } from '../types';
 import JSON5 from 'json5';
 
 // --- CONFIGURATION ---
-const API_BASE_URL = 'https://generativelanguage.googleapis.com/v1beta';
+const API_BASE_URL = 'https://generativelanguage.googleapis.com/v1beta/models';
 const API_KEY = import.meta.env.VITE_GEMINI_API_KEY; 
-const MODEL_NAME = 'gemini-1.5-flash';
+const MODEL_NAME = 'gemini-1.5-flash-latest';
 
 /**
  * Creates the detailed system prompt for document analysis.
@@ -50,7 +50,7 @@ export async function generateDocumentAnalysis(
   const userPrompt = `Document for analysis:\n\n${documentContent}`;
 
   try {
-    const response = await fetch(`${API_BASE_URL}/models/${MODEL_NAME}:generateContent?key=${API_KEY}`, {
+    const response = await fetch(`${API_BASE_URL}/${MODEL_NAME}:generateContent?key=${API_KEY}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -120,7 +120,7 @@ export async function generateContractTemplate(contractType: string): Promise<{ 
   const userPrompt = `Generate a ${contractType} template.`;
 
   try {
-    const response = await fetch(`${API_BASE_URL}/models/${MODEL_NAME}:generateContent?key=${API_KEY}`, {
+    const response = await fetch(`${API_BASE_URL}/${MODEL_NAME}:generateContent?key=${API_KEY}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -244,7 +244,7 @@ export async function* streamChatResponse(
     ];
 
   try {
-    const response = await fetch(`${API_BASE_URL}/models/${MODEL_NAME}:streamGenerateContent?key=${API_KEY}&alt=sse`, {
+    const response = await fetch(`${API_BASE_URL}/${MODEL_NAME}:streamGenerateContent?key=${API_KEY}&alt=sse`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
