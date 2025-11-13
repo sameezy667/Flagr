@@ -5,39 +5,40 @@ import { Message, MessageRole, AIAnalysisData } from '../types';
 import JSON5 from 'json5';
 
 // --- CONFIGURATION ---
-const API_BASE_URL = 'https://generativelanguage.googleapis.com/v1/models';
+const API_BASE_URL = 'https://generativelanguage.googleapis.com/v1beta/models';
 const API_KEY = import.meta.env.VITE_GEMINI_API_KEY; 
-const MODEL_NAME = 'gemini-pro';
+const MODEL_NAME = 'gemini-1.5-flash';
 
 /**
  * Creates the detailed system prompt for document analysis.
  * The prompt now only needs to describe the *content* of the JSON.
  */
 function getDocumentAnalysisPrompt(docType: string): string {
-  return `You are an expert AI legal assistant. Your task is to analyze a ${docType} and return ONLY a valid JSON object with no other text, explanations, or markdown formatting.
+  return `You are an expert AI legal assistant. Analyze the ${docType} and return ONLY a valid JSON object.
 
-The JSON output must conform to this exact TypeScript interface:
-interface AIAnalysisData {
-  plainLanguageSummary: string;
-  flags: { id: string; title: string; clause: string; explanation: string; severity: 'Low' | 'Medium' | 'High'; suggestedRewrite: string; }[];
-  riskAssessment: { overallSummary: string; risks: { area: string; assessment: string; score: number; }[]; };
-  aiInsights: { overallSummary: string; recommendations: { id: string; recommendation: string; justification: string; }[]; };
-  detectedDocType?: string;
+CRITICAL REQUIREMENTS:
+- Return ONLY raw JSON - no markdown, no code blocks, no explanations
+- The JSON must be valid and parseable
+- Do not wrap in \`\`\`json\`\`\` blocks
+- Start response with { and end with }
+
+Required JSON structure:
+{
+  "plainLanguageSummary": "string",
+  "flags": [{"id": "string", "title": "string", "clause": "string", "explanation": "string", "severity": "Low|Medium|High", "suggestedRewrite": "string"}],
+  "riskAssessment": {"overallSummary": "string", "risks": [{"area": "string", "assessment": "string", "score": number}]},
+  "aiInsights": {"overallSummary": "string", "recommendations": [{"id": "string", "recommendation": "string", "justification": "string"}]},
+  "detectedDocType": "string"
 }
 
-CRITICAL: Return ONLY the raw JSON object. Do not wrap it in markdown code blocks. Do not add any explanation before or after the JSON.
+Analysis Guidelines:
+1. plainLanguageSummary: Brief, clear summary in simple language
+2. flags: Find concerning clauses (POWER EXPANSION, VAGUE LANGUAGE, RIGHTS RESTRICTIONS, SURVEILLANCE, EMERGENCY POWERS, FINANCIAL IMPACT)
+3. riskAssessment: Overall compliance analysis with risk scores 1-10
+4. aiInsights: Actionable recommendations for improvement
+5. detectedDocType: Type of document (e.g., "Privacy Policy", "Terms of Service")
 
-First, as a preliminary step, identify the most likely type of this document (e.g., 'Employment Agreement', 'Privacy Policy', 'Terms of Service'). Add this identification to the final JSON object under a key called 'detectedDocType'. Then, proceed with the rest of the analysis as requested.
-
-GUIDELINES:
-1.  **plainLanguageSummary**: Concise, neutral summary in simple language.
-2.  **flags**: Look for POWER EXPANSION, VAGUE LANGUAGE, RIGHTS RESTRICTIONS, SURVEILLANCE, EMERGENCY POWERS, FINANCIAL IMPACT. 'clause' must be an exact quote. If none, return [].
-3.  **riskAssessment**: Provide an 'overallSummary' and list 'risks' with a 'score' from 1-10.
-4.  **aiInsights**: Provide an 'overallSummary' and 'recommendations'.
-5.  **suggestedRewrite**: For each flag you create, also provide a 'suggestedRewrite' property. This should contain a rewritten version of the clause that is safer and more favorable to the user.
-Generate at least 2-3 flags, 2-3 risks, and 2-3 insights for a complex document.
-
-REMEMBER: Output ONLY the JSON object, nothing else.`;
+Return the JSON object immediately, no other text:`;
 }
 
 /**
@@ -74,15 +75,33 @@ export async function generateDocumentAnalysis(
     });
 
     if (!response.ok) {
-      const errorData = await response.json();
-      console.error('Error from Gemini API:', errorData);
-      
-      // Check for specific quota error
-      if (errorData.error?.message?.includes('quota') || errorData.error?.message?.includes('exceeded')) {
-        throw new Error(`API Quota Exceeded: ${errorData.error.message}. Please check your Google Cloud Console billing and quota settings.`);
+      let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+      try {
+        const errorData = await response.json();
+        console.error('Error from Gemini API:', errorData);
+        
+        if (errorData.error?.message) {
+          errorMessage = errorData.error.message;
+          
+          // Specific error handling
+          if (errorMessage.includes('quota') || errorMessage.includes('exceeded')) {
+            throw new Error(`API Quota Exceeded: ${errorMessage}. Please check your Google Cloud Console billing and quota settings.`);
+          }
+          
+          if (errorMessage.includes('not found') || errorMessage.includes('not supported')) {
+            throw new Error(`Model Not Available: ${errorMessage}. The selected model may not be available in your region or plan.`);
+          }
+          
+          if (errorMessage.includes('API key')) {
+            throw new Error(`Invalid API Key: ${errorMessage}. Please check your Gemini API key configuration.`);
+          }
+        }
+      } catch (parseError) {
+        // If we can't parse the error response, use the status
+        console.error('Could not parse error response:', parseError);
       }
       
-      throw new Error(`API Error: ${errorData.error?.message || response.statusText}`);
+      throw new Error(`API Error: ${errorMessage}`);
     }
 
     const responseData = await response.json();
@@ -94,53 +113,112 @@ export async function generateDocumentAnalysis(
     
     console.log('Raw AI response:', messageContent);
     
-    // Try multiple approaches to extract valid JSON
+    // Production-ready JSON parsing with comprehensive fallback
     let parsedData;
     let jsonString = messageContent.trim();
     
     try {
-      // Method 1: Try parsing as-is
+      // Method 1: Direct JSON parsing
       parsedData = JSON.parse(jsonString);
     } catch (e1) {
+      console.log('Method 1 failed, trying method 2...');
       try {
         // Method 2: Remove markdown code blocks
         const codeBlockMatch = jsonString.match(/```(?:json)?\s*\n?([\s\S]*?)\n?```/);
         if (codeBlockMatch) {
           jsonString = codeBlockMatch[1].trim();
+          parsedData = JSON.parse(jsonString);
+        } else {
+          throw new Error('No code block found');
         }
-        parsedData = JSON.parse(jsonString);
       } catch (e2) {
+        console.log('Method 2 failed, trying method 3...');
         try {
-          // Method 3: Extract JSON object from mixed text
+          // Method 3: Extract JSON object from text
           const jsonMatch = jsonString.match(/\{[\s\S]*\}/);
           if (jsonMatch) {
             jsonString = jsonMatch[0];
+            parsedData = JSON.parse(jsonString);
+          } else {
+            throw new Error('No JSON object found');
           }
-          parsedData = JSON.parse(jsonString);
         } catch (e3) {
+          console.log('Method 3 failed, trying method 4...');
           try {
-            // Method 4: Use JSON5 for more lenient parsing
+            // Method 4: JSON5 parsing (more lenient)
             parsedData = JSON5.parse(jsonString);
           } catch (e4) {
-            // Method 5: Create fallback response if all parsing fails
-            console.error('All JSON parsing methods failed, creating fallback response');
-            parsedData = {
-              plainLanguageSummary: "Document analysis completed, but full details could not be parsed properly.",
-              flags: [],
-              riskAssessment: {
-                overallSummary: "Unable to assess risks due to parsing error.",
-                risks: []
-              },
-              aiInsights: {
-                overallSummary: "Unable to generate insights due to parsing error.",
-                recommendations: []
-              },
-              detectedDocType: "Unknown"
-            };
+            console.log('Method 4 failed, trying method 5...');
+            try {
+              // Method 5: Extract JSON from mixed content
+              const lines = jsonString.split('\n');
+              let jsonLines = [];
+              let inJson = false;
+              
+              for (const line of lines) {
+                if (line.trim().startsWith('{')) inJson = true;
+                if (inJson) jsonLines.push(line);
+                if (line.trim().endsWith('}')) break;
+              }
+              
+              if (jsonLines.length > 0) {
+                parsedData = JSON.parse(jsonLines.join('\n'));
+              } else {
+                throw new Error('Could not extract JSON');
+              }
+            } catch (e5) {
+              console.error('All parsing methods failed. Creating fallback response.');
+              // Method 6: Fallback response
+              parsedData = {
+                plainLanguageSummary: "Document analysis completed, but response format was invalid. Please try again.",
+                flags: [
+                  {
+                    id: "parsing-error",
+                    title: "Analysis Parsing Error",
+                    clause: "Unable to parse AI response",
+                    explanation: "The AI response could not be properly parsed. This may be due to formatting issues.",
+                    severity: "Medium",
+                    suggestedRewrite: "Please try uploading the document again."
+                  }
+                ],
+                riskAssessment: {
+                  overallSummary: "Unable to complete full risk assessment due to parsing error.",
+                  risks: [
+                    {
+                      area: "Technical",
+                      assessment: "Response parsing failed",
+                      score: 5
+                    }
+                  ]
+                },
+                aiInsights: {
+                  overallSummary: "Analysis incomplete due to technical issues.",
+                  recommendations: [
+                    {
+                      id: "retry",
+                      recommendation: "Try uploading the document again",
+                      justification: "Technical parsing error occurred"
+                    }
+                  ]
+                },
+                detectedDocType: "Unknown"
+              };
+            }
           }
         }
       }
     }
+    
+    // Validate the parsed data structure
+    if (!parsedData || typeof parsedData !== 'object') {
+      throw new Error('Parsed data is not a valid object');
+    }
+    
+    // Ensure required fields exist
+    if (!parsedData.plainLanguageSummary) parsedData.plainLanguageSummary = "Document analysis completed.";
+    if (!parsedData.flags) parsedData.flags = [];
+    if (!parsedData.riskAssessment) parsedData.riskAssessment = { overallSummary: "Risk assessment unavailable.", risks: [] };
+    if (!parsedData.aiInsights) parsedData.aiInsights = { overallSummary: "AI insights unavailable.", recommendations: [] };
     
     return parsedData as AIAnalysisData;
 
