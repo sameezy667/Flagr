@@ -61,6 +61,9 @@ export async function generateDocumentAnalysis(
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
+        systemInstruction: {
+          parts: [{ text: "You are a helpful assistant that ALWAYS responds with valid JSON objects only. Never include markdown formatting or explanations outside the JSON." }]
+        },
         contents: [{
           parts: [
             { text: systemPrompt + "\n\n" + userPrompt }
@@ -88,22 +91,54 @@ export async function generateDocumentAnalysis(
     
     console.log('Raw AI response:', messageContent);
     
-    // Try to extract JSON from the response (remove markdown code blocks if present)
+    // Try multiple approaches to extract valid JSON
+    let parsedData;
     let jsonString = messageContent.trim();
     
-    // Remove markdown code blocks
-    const codeBlockMatch = jsonString.match(/```(?:json)?\s*\n?([\s\S]*?)\n?```/);
-    if (codeBlockMatch) {
-      jsonString = codeBlockMatch[1].trim();
+    try {
+      // Method 1: Try parsing as-is
+      parsedData = JSON.parse(jsonString);
+    } catch (e1) {
+      try {
+        // Method 2: Remove markdown code blocks
+        const codeBlockMatch = jsonString.match(/```(?:json)?\s*\n?([\s\S]*?)\n?```/);
+        if (codeBlockMatch) {
+          jsonString = codeBlockMatch[1].trim();
+        }
+        parsedData = JSON.parse(jsonString);
+      } catch (e2) {
+        try {
+          // Method 3: Extract JSON object from mixed text
+          const jsonMatch = jsonString.match(/\{[\s\S]*\}/);
+          if (jsonMatch) {
+            jsonString = jsonMatch[0];
+          }
+          parsedData = JSON.parse(jsonString);
+        } catch (e3) {
+          try {
+            // Method 4: Use JSON5 for more lenient parsing
+            parsedData = JSON5.parse(jsonString);
+          } catch (e4) {
+            // Method 5: Create fallback response if all parsing fails
+            console.error('All JSON parsing methods failed, creating fallback response');
+            parsedData = {
+              plainLanguageSummary: "Document analysis completed, but full details could not be parsed properly.",
+              flags: [],
+              riskAssessment: {
+                overallSummary: "Unable to assess risks due to parsing error.",
+                risks: []
+              },
+              aiInsights: {
+                overallSummary: "Unable to generate insights due to parsing error.",
+                recommendations: []
+              },
+              detectedDocType: "Unknown"
+            };
+          }
+        }
+      }
     }
     
-    // Try to find JSON object in the text
-    const jsonMatch = jsonString.match(/\{[\s\S]*\}/);
-    if (jsonMatch) {
-      jsonString = jsonMatch[0];
-    }
-    
-    const parsedData = JSON5.parse(jsonString);
     return parsedData as AIAnalysisData;
 
   } catch (error) {
