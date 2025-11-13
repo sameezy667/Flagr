@@ -61,9 +61,6 @@ export async function generateDocumentAnalysis(
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        systemInstruction: {
-          parts: [{ text: "You are a helpful assistant that ALWAYS responds with valid JSON objects only. Never include markdown formatting or explanations outside the JSON." }]
-        },
         contents: [{
           parts: [
             { text: systemPrompt + "\n\n" + userPrompt }
