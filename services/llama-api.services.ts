@@ -7,7 +7,7 @@ import JSON5 from 'json5';
 // --- CONFIGURATION ---
 const API_BASE_URL = 'https://generativelanguage.googleapis.com/v1beta/models';
 const API_KEY = import.meta.env.VITE_GEMINI_API_KEY; 
-const MODEL_NAME = 'gemini-2.0-flash-exp';
+const MODEL_NAME = 'gemini-pro';
 
 /**
  * Creates the detailed system prompt for document analysis.
@@ -79,7 +79,13 @@ export async function generateDocumentAnalysis(
     if (!response.ok) {
       const errorData = await response.json();
       console.error('Error from Gemini API:', errorData);
-      throw new Error(`API returned an error: ${errorData.error?.message || response.statusText}`);
+      
+      // Check for specific quota error
+      if (errorData.error?.message?.includes('quota') || errorData.error?.message?.includes('exceeded')) {
+        throw new Error(`API Quota Exceeded: ${errorData.error.message}. Please check your Google Cloud Console billing and quota settings.`);
+      }
+      
+      throw new Error(`API Error: ${errorData.error?.message || response.statusText}`);
     }
 
     const responseData = await response.json();
@@ -143,11 +149,18 @@ export async function generateDocumentAnalysis(
 
   } catch (error) {
     console.error('Error during Gemini API call or JSON parsing:', error);
+    
+    // If it's a quota or API error, re-throw with the original message
+    if (error instanceof Error && (error.message.includes('quota') || error.message.includes('API Error'))) {
+      throw error;
+    }
+    
     if (error instanceof SyntaxError) {
       console.error("The AI returned a response that was not valid JSON.", error);
     }
+    
     throw new Error(
-      'Failed to get a valid analysis from the AI. The AI response may have been incomplete or improperly formatted.'
+      `Failed to get a valid analysis from the AI: ${error instanceof Error ? error.message : 'Unknown error'}`
     );
   }
 }
