@@ -246,7 +246,7 @@ export async function generateContractTemplate(contractType: string): Promise<{ 
   const userPrompt = `Generate a ${contractType} template.`;
 
   const config = {
-    temperature: 0.2,
+    temperature: 0,
     thinkingConfig: {
       thinkingBudget: 0,
     },
@@ -373,7 +373,7 @@ export async function* streamChatResponse(
   ];
 
   const config = {
-    temperature: 0.7,
+    temperature: 0,
     thinkingConfig: {
       thinkingBudget: 0,
     },
