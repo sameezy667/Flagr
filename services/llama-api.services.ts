@@ -3,11 +3,14 @@
 
 import { Message, MessageRole, AIAnalysisData } from '../types';
 import JSON5 from 'json5';
+import { GoogleGenAI } from '@google/genai';
 
 // --- CONFIGURATION ---
-const API_BASE_URL = 'https://generativelanguage.googleapis.com/v1beta/models';
 const API_KEY = import.meta.env.VITE_GEMINI_API_KEY; 
 const MODEL_NAME = 'gemini-flash-lite-latest';
+
+// Initialize GoogleGenAI instance
+const ai = API_KEY ? new GoogleGenAI({ apiKey: API_KEY }) : null;
 
 /**
  * Creates the detailed system prompt for document analysis.
@@ -48,64 +51,43 @@ export async function generateDocumentAnalysis(
   documentContent: string,
   docType: string
 ): Promise<AIAnalysisData> {
-  if (!API_KEY) {
+  if (!ai) {
     throw new Error("Missing API Key. Please add VITE_GEMINI_API_KEY to your .env.local file.");
   }
 
   const systemPrompt = getDocumentAnalysisPrompt(docType);
   const userPrompt = `Document for analysis:\n\n${documentContent}`;
 
-  try {
-    const response = await fetch(`${API_BASE_URL}/${MODEL_NAME}:generateContent?key=${API_KEY}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        contents: [{
-          parts: [
-            { text: systemPrompt + "\n\n" + userPrompt }
-          ]
-        }],
-        generationConfig: {
-          temperature: 0.1,
-          maxOutputTokens: 4096,
+  const config = {
+    temperature: 0.1,
+    thinkingConfig: {
+      thinkingBudget: 0,
+    },
+    responseMimeType: 'application/json',
+  };
+
+  const contents = [
+    {
+      role: 'user',
+      parts: [
+        {
+          text: systemPrompt + "\n\n" + userPrompt,
         },
-      }),
+      ],
+    },
+  ];
+
+  try {
+    const response = await ai.models.generateContentStream({
+      model: MODEL_NAME,
+      config,
+      contents,
     });
 
-    if (!response.ok) {
-      let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
-      try {
-        const errorData = await response.json();
-        console.error('Error from Gemini API:', errorData);
-        
-        if (errorData.error?.message) {
-          errorMessage = errorData.error.message;
-          
-          // Specific error handling
-          if (errorMessage.includes('quota') || errorMessage.includes('exceeded')) {
-            throw new Error(`API Quota Exceeded: ${errorMessage}. Please check your Google Cloud Console billing and quota settings.`);
-          }
-          
-          if (errorMessage.includes('not found') || errorMessage.includes('not supported')) {
-            throw new Error(`Model Not Available: ${errorMessage}. The selected model may not be available in your region or plan.`);
-          }
-          
-          if (errorMessage.includes('API key')) {
-            throw new Error(`Invalid API Key: ${errorMessage}. Please check your Gemini API key configuration.`);
-          }
-        }
-      } catch (parseError) {
-        // If we can't parse the error response, use the status
-        console.error('Could not parse error response:', parseError);
-      }
-      
-      throw new Error(`API Error: ${errorMessage}`);
+    let messageContent = '';
+    for await (const chunk of response) {
+      messageContent += chunk.text || '';
     }
-
-    const responseData = await response.json();
-    const messageContent = responseData.candidates?.[0]?.content?.parts?.[0]?.text;
 
     if (!messageContent) {
       throw new Error("API response did not contain a valid message.");
@@ -256,47 +238,48 @@ Do NOT include any other text, explanation, or formatting. Only output the JSON 
  * Generates a contract template and risk flags using the AI API.
  */
 export async function generateContractTemplate(contractType: string): Promise<{ template: string; flags: any[] }> {
-  if (!API_KEY) {
+  if (!ai) {
     throw new Error("Missing API Key. Please add VITE_GEMINI_API_KEY to your .env.local file.");
   }
 
   const systemPrompt = getTemplateGenerationPrompt(contractType);
   const userPrompt = `Generate a ${contractType} template.`;
 
-  try {
-    const response = await fetch(`${API_BASE_URL}/${MODEL_NAME}:generateContent?key=${API_KEY}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        contents: [{
-          parts: [
-            { text: systemPrompt + "\n\n" + userPrompt }
-          ]
-        }],
-        generationConfig: {
-          temperature: 0.2,
-          maxOutputTokens: 4096,
+  const config = {
+    temperature: 0.2,
+    thinkingConfig: {
+      thinkingBudget: 0,
+    },
+    responseMimeType: 'application/json',
+  };
+
+  const contents = [
+    {
+      role: 'user',
+      parts: [
+        {
+          text: systemPrompt + "\n\n" + userPrompt,
         },
-      }),
+      ],
+    },
+  ];
+
+  try {
+    const response = await ai.models.generateContentStream({
+      model: MODEL_NAME,
+      config,
+      contents,
     });
 
-    if (!response.ok) {
-      let errorMessage = `API returned an error: ${response.statusText}`;
-      try {
-        const errorData = await response.json();
-        if (errorData.error?.message) errorMessage = errorData.error.message;
-        if (errorData.failed_generation) errorMessage += `\nDetails: ${errorData.failed_generation}`;
-      } catch {}
-      throw new Error(errorMessage);
+    let messageContent = '';
+    for await (const chunk of response) {
+      messageContent += chunk.text || '';
     }
 
-    const responseData = await response.json();
-    const messageContent = responseData.candidates?.[0]?.content?.parts?.[0]?.text;
     if (!messageContent) {
       throw new Error("API response did not contain a valid message.");
     }
+    
     console.log('Raw AI contract template output:', messageContent);
     // Try to extract a valid JSON object
     let parsed = null;
@@ -370,65 +353,43 @@ export async function generateContractTemplate(contractType: string): Promise<{ 
 export async function* streamChatResponse(
   history: Message[]
 ): AsyncGenerator<string> {
-  if (!API_KEY) {
+  if (!ai) {
       yield "Error: Missing API Key in the application configuration.";
       return;
   }
-    const systemInstruction = `You are Flagr, an expert AI assistant specializing in document analysis. The user has already seen the initial analysis of their document. Your role now is to answer follow-up questions accurately and conversationally, based ONLY on the document context provided in the chat history. If the answernot in the document, state that clearly. Use formatting like bolding and bullet points to improve readability.`;
+  
+  const systemInstruction = `You are Flagr, an expert AI assistant specializing in document analysis. The user has already seen the initial analysis of their document. Your role now is to answer follow-up questions accurately and conversationally, based ONLY on the document context provided in the chat history. If the answer is not in the document, state that clearly. Use formatting like bolding and bullet points to improve readability.`;
 
-    // Convert message history to Gemini format
-    const contents = [
-      {
-        parts: [{ text: systemInstruction }]
-      },
-      ...history.map(msg => ({
-        role: msg.role === MessageRole.USER ? 'user' : 'model',
-        parts: [{ text: msg.content }]
-      }))
-    ];
+  // Convert message history to Gemini format
+  const contents = [
+    {
+      role: 'user',
+      parts: [{ text: systemInstruction }]
+    },
+    ...history.map(msg => ({
+      role: msg.role === MessageRole.USER ? 'user' : 'model',
+      parts: [{ text: msg.content }]
+    }))
+  ];
+
+  const config = {
+    temperature: 0.7,
+    thinkingConfig: {
+      thinkingBudget: 0,
+    },
+    responseMimeType: 'text/plain',
+  };
 
   try {
-    const response = await fetch(`${API_BASE_URL}/${MODEL_NAME}:streamGenerateContent?key=${API_KEY}&alt=sse`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        contents: contents,
-        generationConfig: {
-          temperature: 0.7,
-          maxOutputTokens: 2048,
-        },
-      }),
+    const response = await ai.models.generateContentStream({
+      model: MODEL_NAME,
+      config,
+      contents,
     });
 
-    if (!response.ok || !response.body) {
-       const errorText = await response.text();
-       throw new Error(`Failed to stream from the AI: ${response.statusText} - ${errorText}`);
-    }
-
-    const reader = response.body.getReader();
-    const decoder = new TextDecoder();
-    let buffer = '';
-
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      buffer += decoder.decode(value, { stream: true });
-      const lines = buffer.split('\n');
-      buffer = lines.pop() || '';
-
-      for (const line of lines) {
-        if (line.startsWith('data: ')) {
-          const data = line.substring(6);
-          try {
-            const chunk = JSON.parse(data);
-            const content = chunk.candidates?.[0]?.content?.parts?.[0]?.text;
-            if (content) yield content;
-          } catch (e) {
-            console.error('Error parsing stream chunk:', data);
-          }
-        }
+    for await (const chunk of response) {
+      if (chunk.text) {
+        yield chunk.text;
       }
     }
   } catch (error) {
