@@ -59,7 +59,7 @@ export async function generateDocumentAnalysis(
   const userPrompt = `Document for analysis:\n\n${documentContent}`;
 
   const config = {
-    temperature: 0.1,
+    temperature: 0,
     thinkingConfig: {
       thinkingBudget: 0,
     },
