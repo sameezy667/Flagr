@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect, useMemo } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import ReactDOM from 'react-dom';
 import { AnalysisResult, Flag, Risk, Insight } from '../types';
 import {
@@ -8,8 +8,7 @@ import { speakText, stopSpeaking } from '../services/speechService';
 import jsPDF from 'jspdf';
 import { v4 as uuidv4 } from 'uuid';
 import { Document, Packer, Paragraph, HeadingLevel } from 'docx';
-import DocumentInfographics from './DocumentInfographics';
-import Heatmap3DView from './ARView';
+// Removed DocumentInfographics and Heatmap3DView - infographics/heatmap UI removed
 
 const getSeverityClass = (severity: 'Low' | 'Medium' | 'High') => {
     switch (severity) {
@@ -159,7 +158,7 @@ interface AnalysisResultsViewProps {
     activeSessionId?: string;
 }
 
-const AnalysisResultsView: React.FC<AnalysisResultsViewProps> = ({ results, fullText, analyticsOpen, onCloseAnalytics, historyOpen, onCloseHistory, activeSessionId }) => {
+const AnalysisResultsView: React.FC<AnalysisResultsViewProps> = ({ results, fullText, analyticsOpen, onCloseAnalytics, historyOpen, onCloseHistory }) => {
     const [isSpeaking, setIsSpeaking] = useState(false);
     const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
     const [selectedVoiceURI, setSelectedVoiceURI] = useState<string | undefined>(undefined);
@@ -175,13 +174,7 @@ const AnalysisResultsView: React.FC<AnalysisResultsViewProps> = ({ results, full
     const shareButtonRef = useRef<HTMLButtonElement>(null);
     const downloadButtonRef = useRef<HTMLButtonElement>(null);
     const [downloadDropdownPosition, setDownloadDropdownPosition] = useState<{top: number, left: number, width: number} | null>(null);
-    const [showHeatmap, setShowHeatmap] = useState(false);
-    // Generate a new random seed for each analysis/chat
-    const heatmapSeed = useMemo(() => Math.random().toString(36).slice(2), [results, activeSessionId]);
-    // Auto-close heatmap on chat/session switch
-    useEffect(() => {
-        setShowHeatmap(false);
-    }, [activeSessionId]);
+    // Infographics and heatmap removed — no related state needed
 
     // Load voices on mount and when voices change
     useEffect(() => {
@@ -430,7 +423,7 @@ const AnalysisResultsView: React.FC<AnalysisResultsViewProps> = ({ results, full
         window.location.href = `mailto:?subject=${subject}&body=${body}`;
     };
 
-    const riskData = results.riskAssessment?.risks?.map(risk => ({ area: risk.area, score: risk.score })) || [];
+    // riskData removed (was used for heatmap)
 
     // Analytics modal content
     const renderAnalyticsModal = (onClose: () => void) => (
@@ -588,19 +581,7 @@ const AnalysisResultsView: React.FC<AnalysisResultsViewProps> = ({ results, full
                 </div>
                 <h3 className="text-xl font-bold text-white flex-1">Analysis for: <strong>{detectedType}</strong></h3>
             </div>
-            {/* Heatmap Button */}
-            <div className="flex justify-end mb-4">
-                <button
-                    onClick={() => setShowHeatmap(true)}
-                    className="px-6 py-3 rounded-full border-2 border-spotify text-spotify font-bold bg-black hover:bg-spotify hover:text-black transition shadow-lg"
-                >
-                    View Heatmap
-                </button>
-            </div>
-            {/* Heatmap Modal */}
-            {showHeatmap && (
-                <Heatmap3DView risks={riskData} onClose={() => setShowHeatmap(false)} seed={heatmapSeed} />
-            )}
+            {/* Heatmap removed */}
             <div className="flex flex-col md:flex-row gap-8 w-full">
                 {/* Left: Analysis Cards */}
                 <div className="flex-1 space-y-6">
@@ -653,10 +634,7 @@ const AnalysisResultsView: React.FC<AnalysisResultsViewProps> = ({ results, full
                         </div>
                     </AnalysisCard>
                 </div>
-                {/* Right: Infographics Sidebar */}
-                <div className="w-full md:w-[380px] flex-shrink-0 md:sticky md:top-8 h-fit">
-                    <DocumentInfographics results={results} />
-                </div>
+                {/* Right sidebar removed (infographics) */}
             </div>
             {analyticsOpen && renderAnalyticsModal(onCloseAnalytics || (() => {})) }
             {historyOpen && renderHistoryModal(onCloseHistory || (() => {})) }
