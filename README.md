@@ -420,10 +420,6 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 - **[Material Icon Theme](https://github.com/PKief/vscode-material-icon-theme)** - Beautiful icons for the project
 - **[Shields.io](https://shields.io/)** - Clean and informative badges
 
-### 🌟 Special Thanks
-- **IEEE RAS team** for inspiring and motivating us to build this project for the PIXEL PALETTES hackathon
-- The open-source community for inspiration and support
-
 ### 📚 Resources & Inspiration
 - [React Documentation](https://react.dev/)
 - [TypeScript Handbook](https://www.typescriptlang.org/docs/)
